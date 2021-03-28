@@ -1,0 +1,84 @@
+<?xml version="1.0" ?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!--
+	Copyright 2021 Jens Elkner. All rights reserved.
+	License: CDDL 1.1
+
+	To remove this service, use:
+		rm -f /lib/svc/manifest/application/nvmex.xml
+		svcadm restart manifest-import
+	To re-import and run, use:
+		cp etc/nvmex.xml /lib/svc/manifest/application/management/nvmex.xml
+		svcadm restart manifest-import
+		svcadm enable nvmex
+-->
+<service_bundle type='manifest' name='LNFnvmex:nvmex'>
+
+	<service name='application/management/nvmex' type='service' version='1'>
+
+		<create_default_instance enabled='false' />
+
+		<single_instance />
+
+		<!-- Wait for network -->
+		<dependency name='network' type='service' grouping='require_all'
+			restart_on='refresh'>
+			<service_fmri value='svc:/milestone/network:default'/>
+		</dependency>
+        <!-- Wait for all local filesystems to be mounted -->
+        <dependency name='filesystem-local' type='service'
+			grouping='require_all' restart_on='none'>
+			<service_fmri value='svc:/system/filesystem/local:default'/>
+		</dependency>
+		<!-- Start nvmex before vmagent -->
+		<dependent name='vmagent' grouping='optional_all' restart_on='none'>
+			<service_fmri value='svc:/application/vmagent'/>
+		</dependent>
+
+		<!-- Service start/stop methods -->
+		<exec_method timeout_seconds='5' type='method' name='start'
+			exec='/usr/sbin/nvmex -d -p %{config/port} %{config/args}'>
+			<method_context>
+				<!-- NVML needs access to /dev/nvidiaN and
+					/dev/nvidiactl which is owned read-only by root.
+					However, file_dac_{read|write} are not sufficient, so
+					we need to run as root instead of webservd for now. -->
+				<method_credential user='root' group='webservd'
+					privileges='basic,net_privaddr,file_dac_read,file_dac_write'/>
+			</method_context>
+		</exec_method>
+
+		<exec_method timeout_seconds='5' type='method' name='stop'
+			exec=':kill -TERM'/>
+
+		<property_group name='config' type='application'>
+			<stability value='Evolving' />
+			<propval name='port' type='integer' value='9400' />
+			<propval name='args' type='astring' value=''/>
+		</property_group>
+
+		<property_group name='startd' type='framework'>
+			<!-- service mode is contract -->
+			<propval type='astring' name='duration' value='contract'/>
+			<!-- sub-process core dumps shouldn't restart session -->
+			<propval name='ignore_error' type='astring' value='core,signal' />
+		</property_group>
+
+		<property_group name='general' type='framework'>
+			<propval name='active' type='boolean' value='true' />
+			<propval name='action_authorization' type='astring'
+				value='solaris.smf.manage.nvmex' />
+			<propval name='value_authorization' type='astring'
+				value='solaris.smf.manage.nvmex' />
+		</property_group>
+
+		<template>
+			<common_name><loctext xml:lang='C'>nvmex</loctext></common_name>
+			<description>
+				<loctext xml:lang='C'>
+					Metric exporter for Nvidia GPUs
+				</loctext>
+			</description>
+		</template>
+	</service>
+</service_bundle>

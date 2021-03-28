@@ -1,0 +1,15 @@
+.*.swp
+*~
+*.tmp
+*.o
+*.dep
+*.rej
+*.orig
+.nfs*
+*.DS_Store
+*deb
+*tar.gz
+.vscode
+core
+nv-mex
+libnv-mex*

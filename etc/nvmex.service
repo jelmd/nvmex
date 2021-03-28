@@ -1,0 +1,26 @@
+# Copy to /lib/systemd/system/nvmex.service and 'systemctl daemon-reload' and
+# finally 'systemctl start nvmex'.
+[Unit]
+Description=Metrics exporter for Nvidia GPUs
+Documentation=man:nvmex(8)
+After=network.target auditd.service
+Before=vmagent.service
+
+[Service]
+Type=forking
+# no special privileges are required
+User=daemon
+Group=daemon
+
+EnvironmentFile=-/etc/default/nvmex
+LogsDirectory=nvmex
+
+Restart=always
+RestartSec=1
+RestartPreventExitStatus=1 95 96 97 98 99 100 101 102
+ExecStart=/usr/sbin/nvmex -d $ARGS
+ExecStop=/bin/kill -s SIGTERM $MAINPID
+TimeoutSec=3
+
+[Install]
+WantedBy=multi-user.target
