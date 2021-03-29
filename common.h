@@ -35,13 +35,15 @@ extern "C" {
  */
 typedef struct gpu_st {
 	nvmlDevice_t	dev;	//!< device handle for the GPU
-	uint	idx;			//!< NVML index of the GPU. May change on reboot.
 	char	*uuid;			//!< UUID of the GPU - survives reboot.
 	char	*pciId;	//!< PCI BUS ID - survives reboot if slot does not change.
 	char	**minMaxClock;	//<! PROM metrics for minMax Clocks 
 	char	**defaultClock;	//<! PROM metrics for default Clock
+	uint	idx;			//!< NVML index of the GPU. May change on reboot.
+	char	hasBar1memory;
 } gpu_t;
 
+#define MBUF_SZ 256
 
 #define addPromInfo(metric) \
 	psb_add_str(sb, "# HELP " metric ## _N " " metric ## _D );\
@@ -49,9 +51,22 @@ typedef struct gpu_st {
 	psb_add_str(sb, "# TYPE " metric ## _N " " metric ## _T);\
 	psb_add_char(sb, '\n');\
 
-#define NVMEX_CLOCK_MHZ_D "GPU clock speeds in MHz."
-#define NVMEX_CLOCK_MHZ_T "gauge"
-#define NVMEX_CLOCK_MHZ_N "nvmex_clock_mhz"
+#define NOT_AVAIL(x) \
+	((x) == NVML_ERROR_NOT_SUPPORTED || (x) == NVML_ERROR_GPU_IS_LOST)
+
+#define NVMEXM_CLOCK_D "GPU clock speeds in MHz."
+#define NVMEXM_CLOCK_T "gauge"
+#define NVMEXM_CLOCK_N "nvmex_clock_mhz"
+
+#define NVMEXM_BAR1MEM_D "BAR1 memory in bytes."
+#define NVMEXM_BAR1MEM_T "gauge"
+#define NVMEXM_BAR1MEM_N "nvmex_bar1mem_bytes"
+
+/*
+#define NVMEX_XXX_UUU_D "short description."
+#define NVMEX_XXX_UUU_T "gauge"
+#define NVMEX_XXX_UUU_N "nvmex_yyy_uuu"
+ */
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,223 @@
+.TH nvmex 8 "2021-03-28"
+
+.SH "NAME"
+nvmex \- a metrics exporter for Nvidia GPUs
+
+.SH "SYNOPSIS"
+.nh
+.na
+.HP
+.B nvmex
+[\fB\-CLPScdfh\fR]
+[\fB\-l\ \fIip\fR]
+[\fB\-p\ \fIport\fR]
+[\fB\-v\ DEBUG\fR|\fBINFO\fR|\fBWARN\fR|\fBERROR\fR|\fBFATAL\fR]
+.ad
+.hy
+
+.SH "DESCRIPTION"
+.B nvmex
+is a \fBm\fRetrics \fBex\fRporter for \fBnv\fRidia graphic processing
+units (GPUs).
+To monitor the health and resource consumption of GPUs it utilizes the
+nvidia management library (NVML) usually distributed with the nvidia
+driver or a similar package as libnividia\-ml.so.1 (e.g. Solaris:
+driver/graphics/nvidia, Ubuntu: libnvidia\-compute\-*). Collected data
+can be exposed via HTTP in Prometheuse exposition format [1] using the
+endpoint URL \fBhttp://\fIhostname\fB:\fI9400\fB/metrics\fR and thus
+visualized e.g. using Grafana [2], Netdata [3], or Zabbix [4].
+
+In contrast to Nvidia\'s dcgm\-exporter \fBnvmex\fR is written in plain C
+and thus it is compared to dcgm-exporter extremely lightweight, does not
+trash your disks with hugh error logs, or hogs any cpu. You may run it on
+bare metal, or in any zone, container, or pod which has access to 1+ GPU.
+
+\fBnvmex\fR operates in 3 modes:
+
+.RS 2
+.IP \fBdefault\fR 2
+Just collects all data as it would for a /metrics HTTP request, print
+it to the standard output and exit.
+.IP \fBforeground\fR
+Start the internal HTTP server to answer HTTP requests, but stays
+attached to the console/terminal (i.e. standard input, output and error).
+Use option \fB-f\fR to request this mode.
+.IP \fBdaemon\fR
+Start the internal HTTP server (daemon) to answer HTTP requests in the
+background (fork-exec model) in a new session, detach from the
+console/terminal, attach standard input, output and error to /dev/null
+and finally exit with exit code \fB0\fR, if the daemon is running as
+desired. Remember, if you do not specify a logfile to use, all messages
+emitted by the daemon get dropped.
+Use option \fB-d\fR to request this mode.
+.RE
+
+For now \fBnvmex\fR answers one HTTP request after another to have a
+very small footprint wrt. the system and queried devices. So it is
+recommended to adjust your firewalls and/or HTTP proxies accordingly.
+If you need SSL or authentication, use a HTTP proxy like nginx - for now
+\fBnvmex\fR should be kept small and simple.
+
+
+.SH "OPTIONS"
+.TP 4
+.B \-L
+.PD 0
+.TP
+.B \-\-no\-scrapetime
+Disable the overall scrapetime metrics (libprom collector), i.e. the time
+elapsed when scraping all the required data. One needs also disable
+collecting scrapetimes of all other collectors before this option
+gets honored.
+
+.TP
+.B \-S
+.PD 0
+.TP
+.B \-\-no\-scrapetime\-all
+Disable recording the scrapetime of each collector separately. There is
+one collector named \fBdefault\fR, which collects HTTP request/response
+statistics, the optional \fBprocess\fR collector, which records metrics
+about the nvmex process itself, the \fBnvidia\fR collector, which queries
+all the GPUs devices for metrics, and finally the \fBlibprom\fR collector,
+which just records the time it took to collect and prom-format the data
+of all other collectors.
+
+.TP
+.B \-c
+.PD 0
+.TP
+.B \-\-compact
+Sending a HELP and TYPE comment alias description about a metric is
+according to the Prometheus exposition format [1] optional. With this
+option they will be ommitted in the HTTP response and thus it saves
+bandwith and processing time.
+
+.TP
+.B \-d
+.PD 0
+.TP
+.B \-\-daemon
+Run \fBnvmex\fR in \fBdaemon\fR mode.
+
+.TP
+.B \-f
+.PD 0
+.TP
+.B \-\-foreground
+Run \fBnvmex\fR in \fBforeground\fR mode.
+
+.TP
+.B \-h
+.PD 0
+.TP
+.B \-\-help
+Print a short help summary to the standard output and exit.
+
+.TP
+.BI \-l " file"
+.PD 0
+.TP
+.BI \-\-logfile= file
+Log all messages to the given \fIfile\fR when the main process is running.
+
+.TP
+.BI \-n " list"
+.PD 0
+.TP
+.BI \-\-no-metric= list
+Skip all GPU metrics given in the comma separated \fIlist\fR of metric names.
+Currently supported are:
+
+.RS 4
+
+.TP 4
+.B clocks
+All \fBnvmex_clock_mhz\fR metrics (nvidia collector).
+.TP
+.B process
+All \fBnvmex_process_*\fR metrics (process collector).
+.TP 4
+.B bar1mem
+All \fBnvmex_bar1mem_bytes\fR metrics (nvidia collector).
+
+.RE
+
+.BI \-p " num"
+.PD 0
+.TP
+.BI \-\-port= num
+Bind to port \fInum\fR and listen there for HTTP requests. Note that a port
+below 1024 usually requires additional privileges.
+
+.TP
+.BI \-s " IP"
+.PD 0
+.TP
+.BI \-\-source= IP
+Bind the HTTP server to the given \fIIP\fR address, only. Per default
+it binds to 0.0.0.0, i.e. all IPs configured on this host/zone/container.
+If you want to enable IPv6, just specify an IPv6 address here (\fB::\fR
+is the same for IPv6 as 0.0.0.0 for IPv4).
+
+.TP
+.BI \-v " level"
+.PD 0
+.TP
+.BI \-\-verbosity= level
+Set the message verbosity to the given \fIlevel\fR. Accepted tokens are
+\fBDEBUG\fR, \fBINFO\fR, \fBWARN\fR, \fBERROR\fR, \fBFATAL\fR and for
+convenience \fB1\fR..\fB5\fR respectively.
+
+.SH "EXIT STATUS"
+.TP 4
+.B 0
+on success.
+.TP
+.B 1
+if an unexpected error occurred during the start (other problem).
+.TP
+.B 96
+if an invalid option or option value got passed (config problem).
+.TP
+.B 100
+if the logfile is not writable or port access is not allowed (permission problem).
+.TP
+.B 101
+if the NVML could not be initialized (e.g. because the related kernel module
+is not loaded), or no nvidia GPUs was found (temporary problem).
+
+.SH "ENVIRONMENT"
+
+.TP 4
+.B PROM_LOG_LEVEL
+If no verbosity level got specified via option \fB-v\ \fI...\fR, this
+environment variable gets checked for a verbosity value. If there is a
+valid one, the verbosity level gets set accordingly, otherwise \fBINFO\fR
+level will be used.
+
+.SH "FILES"
+.TP 4
+.B /dev/nvidiaN /dev/nvidiactl
+The character special devices used by the NVML to access GPUs.
+
+.SH "NOTES"
+
+.SH "BUGS"
+https://github.com/jelmd/nvmex is the official source code repository
+for \fBnvmex\fR.  If you need some new features, or metrics, or bug fixes,
+please feel free to create an issue there using
+https://github.com/jelmd/nvmex/issues .
+
+.SH "AUTHORS"
+Jens Elkner
+
+.SH "SEE ALSO"
+[1]\ https://prometheus.io/docs/instrumenting/exposition_formats/
+.br
+[2]\ https://grafana.com/
+.br
+[3]\ https://www.netdata.cloud/
+.br
+[4]\ https://www.zabbix.com/
+.\" # vim: ts=4 sw=4 filetype=nroff

@@ -92,7 +92,7 @@ SONAME= $(SOBN).$(DYNLIB_MAJOR)
 LIBSRCS= inspect.c
 LIBOBJS= $(LIBSRCS:%.c=%.o)
 
-PROGSRCS = main.c inspect.c clocks.c
+PROGSRCS = main.c inspect.c clocks.c bar1memory.c
 #gnugetopt.c
 PROGOBJS = $(PROGSRCS:%.c=%.o) 
 

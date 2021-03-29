@@ -26,27 +26,25 @@
 
 #include "inspect.h"
 #include "clocks.h"
+#include "bar1memory.h"
 
 static struct option options[] = {
-	{"no-clocks",	no_argument,		NULL, 'C'},
-	{"no-oduration",no_argument,		NULL, 'L'},
-	{"no-process",	no_argument,		NULL, 'P'},
-	{"no-cdurationc",no_argument,		NULL, 'S'},
-	{"compact",		no_argument,		NULL, 'c'},
-	{"daemon",		no_argument,		NULL, 'd'},
-	{"foreground",	no_argument,		NULL, 'f'},
-	{"help",		no_argument,		NULL, 'h'},
-	{"listen",		required_argument,	NULL, 'l'},
-	{"port",		required_argument,	NULL, 'p'},
-	{"verbose",		required_argument,	NULL, 'v'},
-/*
-	{"delete",  required_argument, NULL, 'd'},
-*/
+	{"no-scrapetime",		no_argument,		NULL, 'L'},
+	{"no-scrapetime-all",	no_argument,		NULL, 'S'},
+	{"compact",				no_argument,		NULL, 'c'},
+	{"daemon",				no_argument,		NULL, 'd'},
+	{"foreground",			no_argument,		NULL, 'f'},
+	{"help",				no_argument,		NULL, 'h'},
+	{"logfile",				required_argument,	NULL, 'l'},
+	{"no-metrics",			required_argument,	NULL, 'n'},
+	{"port",				required_argument,	NULL, 'p'},
+	{"source",				required_argument,	NULL, 's'},
+	{"verbosity",			required_argument,	NULL, 'v'},
 	{0, 0, 0, 0}
 };
 
 static const char *shortUsage = {
-	"[-CLPScdfh] [-l ip] [-p port] [-v DEBUG|INFO|WARN|ERROR|FATAL]"
+	"[-LScdfh] [-l file] [-n list] [-s ip] [-p port] [-v DEBUG|INFO|WARN|ERROR|FATAL]"
 };
 
 typedef enum {
@@ -65,6 +63,7 @@ typedef enum {
 static struct {
 	uint promflags;
 	bool clocks;
+	bool bar1mem;
 	gpu_t *devList;
 	unsigned int devs;
 	prom_counter_t *req_counter;
@@ -73,9 +72,12 @@ static struct {
 	uint port;
 	struct in6_addr *addr;
 	bool ipv6;
+	int MHD_error;
+	char *logfile;
 } global = {
 	.promflags = PROM_PROCESS | PROM_SCRAPETIME | PROM_SCRAPETIME_ALL,
 	.clocks = true,
+	.bar1mem = true,
 	.devList = NULL,
 	.devs = 0,
 	.req_counter = NULL,
@@ -83,7 +85,9 @@ static struct {
 	.daemon = NULL,
 	.port = 9400,
 	.addr = NULL,
-	.ipv6 = false
+	.ipv6 = false,
+	.MHD_error = -1,
+	.logfile = NULL
 };
 
 // generate the short option string for getopts from <opts>
@@ -117,6 +121,8 @@ collect(prom_collector_t *self) {
 	PROM_DEBUG("collector: %p  sb: %p", self, sb);
 	if (global.clocks)
 		getClocks(sb, compact, global.devs, global.devList);
+	if (global.bar1mem)
+		getBar1memory(sb, compact, global.devs, global.devList);
 	return NULL;
 }
 
@@ -187,6 +193,7 @@ http_handler(void *cls, struct MHD_Connection *connection, const char *url,
 	return ret;
 }
 
+// redirect MHD_DLOG to prom_log
 static void
 MHD_logger(void *cls, const char *fmt, va_list ap) {
 	static char s[256];
@@ -194,6 +201,10 @@ MHD_logger(void *cls, const char *fmt, va_list ap) {
 	// the experimental API has loglevel decision support, but it is usually n/a
 	(void) cls;		// unused
 	vsnprintf(s, sizeof(s), fmt, ap);
+	// since MHD does not return error details but usually logs the reason for
+	// an error before polluting errno again, we capture it here. At least for
+	// MHD_start_daemon() it should be sufficient.
+	global.MHD_error = errno;
 	prom_log(PLL_WARN, (const char*) s);
 }
 
@@ -209,7 +220,8 @@ setupProm(void) {
 
 	keys[0] = "url";
 	if((global.req_counter = prom_counter_new("request_total",
-		"Number of HTTP requests seen since the start of the exporter.",
+		"Number of HTTP requests seen since the start of the exporter "
+		"excl. the current one.",
 		1, keys)) == NULL)
 		goto fail;
 	reqc = global.req_counter;
@@ -219,8 +231,9 @@ setupProm(void) {
 
 	keys[0] = "type";
 	if ((global.res_counter = prom_counter_new("response_total",
-		"HTTP responses by count and bytes excl. HTTP headers seen since the "
-	    "start of the exporter.", 1, keys)) == NULL)
+		"HTTP responses by count and bytes excl. this response and "
+		"HTTP headers seen since the start of the exporter.",
+		1, keys)) == NULL)
 		goto fail;
 	resc = global.res_counter;
 	if (pcr_register_metric(global.res_counter))
@@ -307,7 +320,9 @@ startHttpServer(void) {
 		MHD_OPTION_END);
 	if (global.daemon == NULL) {
 		PROM_FATAL("Unable to start http daemon.", "");
-		return SMF_EXIT_ERR_OTHER;
+		return global.MHD_error == EACCES
+			? SMF_EXIT_ERR_PERM
+			: SMF_EXIT_ERR_OTHER;
 	}
 	return SMF_EXIT_OK;
 }
@@ -361,10 +376,55 @@ daemonize(void) {
 	(void) close(2);
 	// just in case NVML or microhttpd use it somewhere
 	(void) open("/dev/null", O_RDONLY);
-	(void) open("/dev/null", O_WRONLY);
-	(void) open("/dev/null", O_WRONLY);
+	if (global.logfile == NULL) {
+		(void) open("/dev/null", O_WRONLY);
+		(void) open("/dev/null", O_WRONLY);
+	} else {
+		(void) open(global.logfile, O_WRONLY | O_APPEND);
+		(void) open(global.logfile, O_WRONLY | O_APPEND);
+	}
 
 	return pfd[1];
+}
+
+int
+disableMetrics(char *clist) {
+	char *s, *e;
+	size_t len;
+	int res = 0;
+
+	if (clist == NULL)
+		return 0;
+
+	len = strlen(clist);
+	if (len == 0)
+		return 0;
+	e = clist + len;
+	s = e;
+	while (s > clist) {
+		s--;
+		if (*s != ',' && s != clist)
+			continue;
+		if (s != clist)
+			s++;
+		if (s != e) {
+			if (strcmp(s, "process") == 0)
+				global.promflags &= ~PROM_PROCESS;
+			else if (strcmp(s, "clocks") == 0)
+				global.clocks = false;
+			else if (strcmp(s, "bar1mem") == 0)
+				global.bar1mem = false;
+			else {
+				PROM_WARN("Unknown metrics '%s'", s);
+				res++;
+			}
+		}
+		if (s != clist)
+			s--;
+		*s = '\0';
+		e = s;
+	}
+	return res;
 }
 
 int
@@ -384,14 +444,8 @@ main(int argc, char **argv) {
 		if (c == -1)
 			break;
 		switch (c) {
-			case 'C':
-				global.clocks = false;
-				break;
 			case 'L':
 				global.promflags &= ~PROM_SCRAPETIME;
-				break;
-			case 'P':
-				global.promflags &= ~PROM_PROCESS;
 				break;
 			case 'S':
 				global.promflags &= ~PROM_SCRAPETIME_ALL;
@@ -409,6 +463,22 @@ main(int argc, char **argv) {
 				fprintf(stderr, "Usage: %s %s\n", argv[0], shortUsage);
 				return 0;
 			case 'l':
+				if (global.logfile != NULL)
+					free(global.logfile);
+				global.logfile = strdup(optarg);
+				break;
+			case 'n':
+				err += disableMetrics(optarg);
+				break;
+			case 'p':
+				if ((sscanf(optarg, "%u", &n) != 1) || n == 0) {
+					fprintf(stderr, "Invalid port '%s'.\n", optarg);
+					err++;
+				} else {
+					global.port = n;
+				}
+				break;
+			case 's':
 				if (strstr(optarg, ":") == NULL) {
 					if ((res = inet_pton(AF_INET, optarg, &inaddr)) == 1)
 						memcpy(addr, &inaddr, sizeof(struct in_addr));
@@ -429,14 +499,6 @@ main(int argc, char **argv) {
 					addr = NULL;
 				}
 				break;
-			case 'p':
-				if ((sscanf(optarg, "%u", &n) != 1) || n == 0) {
-					fprintf(stderr, "Invalid port '%s'.\n", optarg);
-					err++;
-				} else {
-					global.port = n;
-				}
-				break;
 			case 'v':
 				n = prom_log_level_parse(optarg);
 				if (n == 0) {
@@ -454,6 +516,17 @@ main(int argc, char **argv) {
 	free(addr);
 	if (err)
 		return SMF_EXIT_ERR_CONFIG;
+
+	if (global.logfile != NULL) {
+		FILE *logfile = fopen(global.logfile, "a");
+		if (logfile != NULL)
+			prom_log_use(logfile);
+		else {
+			fprintf(stderr, "Unable to open logfile '%s': %s\n",
+				global.logfile, strerror(errno));
+			return (errno == EACCES) ? SMF_EXIT_ERR_PERM : SMF_EXIT_ERR_CONFIG;
+		}
+	}
 
 	if (mode == 2)
 		pfd = daemonize();
@@ -474,6 +547,7 @@ main(int argc, char **argv) {
 	if (global.devs > 0) {
 		if (mode == 0) {
 			collect(NULL);
+			status = SMF_EXIT_OK;
 		} else if (setupProm() == 0) {
 			status = startHttpServer();
 			// let the parent exit
@@ -484,6 +558,12 @@ main(int argc, char **argv) {
 			// because libmicrohttpd does not expose blocking calls =8-((((
 			if (status == SMF_EXIT_OK)
 				pause();
+		} else {
+			status = SMF_EXIT_ERR_OTHER;
+			if (mode == 2) {
+				(void) write(pfd, &status, sizeof (status));
+				(void) close(pfd);
+			}
 		}
 	} else {
 		fputs("Nothing todo - exiting.\n", stderr);
@@ -498,4 +578,5 @@ main(int argc, char **argv) {
 	free(global.addr);
 	global.devs = cleanup(global.devs, &global.devList);
 	stop();
+	return status;
 }

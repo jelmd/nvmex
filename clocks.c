@@ -20,8 +20,6 @@
 #define MININT (-MAXINT - 1)
 #endif
 
-#define BUF_MAX 256
-
 static const char *domain[] = { "GRAPHICS", "SM", "MEM", "VIDEO" };
 
 static void
@@ -106,7 +104,7 @@ getBoostClock(nvmlDevice_t gpu, uint clock) {
 static void
 setStaticClockVals(gpu_t *gpu, bool compact) {
 	nvmlReturn_t res;
-	char buf[BUF_MAX << 1], *p;
+	char buf[MBUF_SZ << 1], *p;
 	int minMem, maxMem, minGra, maxGra;
 	uint boost, k;
 
@@ -140,7 +138,7 @@ setStaticClockVals(gpu_t *gpu, bool compact) {
 	}
 	p = buf;
 	if (maxMem > 0) {
-		p += sprintf(buf, NVMEX_CLOCK_MHZ_N
+		p += sprintf(buf, NVMEXM_CLOCK_N
 			"{gpu=\"%d\",domain=\"%s\",clock=\"max\",uuid=\"%s\"} %d\n",
 			gpu->idx, domain[k], gpu->uuid, maxMem);
 	} else if (compact) {
@@ -149,7 +147,7 @@ setStaticClockVals(gpu_t *gpu, bool compact) {
 		p += sprintf(buf, "# %s.clock.max n/a\n", domain[k]);
 	}
 	if (minMem != MAXINT) {
-		p += snprintf(p, sizeof(buf) - (p - buf), NVMEX_CLOCK_MHZ_N
+		p += snprintf(p, sizeof(buf) - (p - buf), NVMEXM_CLOCK_N
 			"{gpu=\"%d\",domain=\"%s\",clock=\"min\",uuid=\"%s\"} %d\n",
 			gpu->idx, domain[k], gpu->uuid, minMem);
 	} else if (!compact) {
@@ -171,7 +169,7 @@ setStaticClockVals(gpu_t *gpu, bool compact) {
 	}
 	p = buf;
 	if (maxGra > 0) {
-		p += sprintf(p, NVMEX_CLOCK_MHZ_N
+		p += sprintf(p, NVMEXM_CLOCK_N
 			"{gpu=\"%d\",domain=\"%s\",clock=\"max\",uuid=\"%s\"} %d\n",
 			gpu->idx, domain[k], gpu->uuid, maxGra);
 	} else if (compact) {
@@ -180,7 +178,7 @@ setStaticClockVals(gpu_t *gpu, bool compact) {
 		p += sprintf(p, "# %s.clock.max n/a\n", domain[k]);
 	}
 	if (minGra != MAXINT) {
-		p += snprintf(p, sizeof(buf) - (p - buf), NVMEX_CLOCK_MHZ_N
+		p += snprintf(p, sizeof(buf) - (p - buf), NVMEXM_CLOCK_N
 			"{gpu=\"%d\",domain=\"%s\",clock=\"min\",uuid=\"%s\"} %d\n",
 			gpu->idx, domain[k], gpu->uuid, minGra);
 	} else if (!compact) {
@@ -192,7 +190,7 @@ setStaticClockVals(gpu_t *gpu, bool compact) {
 		// value that GPU boots with or defaults to. Kepler+
 		res = nvmlDeviceGetDefaultApplicationsClock(gpu->dev, k, &boost);
 		if (NVML_SUCCESS == res) {
-			sprintf(buf, NVMEX_CLOCK_MHZ_N
+			sprintf(buf, NVMEXM_CLOCK_N
 				"{gpu=\"%d\",domain=\"%s\",clock=\"default\",uuid=\"%s\"} %u\n",
 				gpu->idx, domain[k], gpu->uuid, boost);
 		} else if (compact) {
@@ -211,7 +209,7 @@ setStaticClockVals(gpu_t *gpu, bool compact) {
 			else
 				sprintf(buf, "# %s.clock.max n/a\n", domain[k]);
 		} else {
-			sprintf(buf, NVMEX_CLOCK_MHZ_N
+			sprintf(buf, NVMEXM_CLOCK_N
 				"{gpu=\"%d\",domain=\"%s\",clock=\"max\",uuid=\"%s\"} %u\n",
 				gpu->idx, domain[k], gpu->uuid, boost);
 		}
@@ -223,7 +221,7 @@ bool
 getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 	nvmlReturn_t res;
 	uint clockMHz, i, k;
-	char buf[BUF_MAX];
+	char buf[MBUF_SZ];
 	bool free_sb = sb == NULL;
 	size_t sz;
 
@@ -237,7 +235,7 @@ getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 	sz = psb_len(sb);
 
 	if (!compact)
-		addPromInfo(NVMEX_CLOCK_MHZ);
+		addPromInfo(NVMEXM_CLOCK);
 	for (i = 0; i < devs; i++) {
 		if (devList[i].dev == NULL)
 			continue;
@@ -249,7 +247,7 @@ getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 			// current clock speed for the device. Fermi+
 			res = nvmlDeviceGetClockInfo(devList[i].dev, k, &clockMHz);
 			if (NVML_SUCCESS == res) {
-				snprintf(buf, BUF_MAX, NVMEX_CLOCK_MHZ_N
+				snprintf(buf, MBUF_SZ, NVMEXM_CLOCK_N
 				"{gpu=\"%d\",domain=\"%s\",clock=\"now\",uuid=\"%s\"} %u\n",
 				i, domain[k], devList[i].uuid, clockMHz);
 				psb_add_str(sb, buf);
@@ -257,7 +255,7 @@ getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 			// value to use unless an overspec situation. Kepler+
 			res = nvmlDeviceGetApplicationsClock(devList[i].dev, k, &clockMHz);
 			if (NVML_SUCCESS == res) {
-				snprintf(buf, BUF_MAX, NVMEX_CLOCK_MHZ_N
+				snprintf(buf, MBUF_SZ, NVMEXM_CLOCK_N
 				"{gpu=\"%d\",domain=\"%s\",clock=\"set\",uuid=\"%s\"} %u\n",
 				i, domain[k], devList[i].uuid, clockMHz);
 				psb_add_str(sb, buf);
@@ -267,7 +265,7 @@ getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 
 	sz = psb_len(sb) - sz;
 	if (free_sb) {
-		fprintf(stderr, "\n%s", psb_str(sb));
+		fprintf(stdout, "\n%s", psb_str(sb));
 		psb_destroy(sb);
 	}
 	return sz != 0;

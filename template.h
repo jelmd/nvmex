@@ -10,13 +10,13 @@
  */
 
 /**
- * @file clocks.h
+ * @file YYYYYY.h
  * A collection of small utilities to get some metrics about GPUs currently
  * available on the machine running it.
  */
 
-#ifndef NVMEX_CLOCKS_H
-#define NVMEX_CLOCKS_H
+#ifndef NVMEX_XXXXXX_H
+#define NVMEX_XXXXXX_H
 
 #include "common.h"
 
@@ -25,17 +25,17 @@ extern "C" {
 #endif
 
 /**
- * Get clock metrics.
+ * Get XXXXXX metrics.
  * @param sb	where to append the metrics.
  * @param compact	If \c true do not add prom descriptions and type comments.
  * @param devs	number of devices in \c devList.
  * @param devList	list of devices to query. Must not be \c NULL !
  * @return \c true if something got append to \c sb , \c false otherwise.
  */
-bool getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]);
+bool getXXXXXX(psb_t *sb, bool compact, uint devs, gpu_t devList[]);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	// NVMEX_CLOCKS_H
+#endif	// NVMEX_XXXXXX_H

@@ -10,13 +10,13 @@
  */
 
 /**
- * @file clocks.h
+ * @file bar1memory.h
  * A collection of small utilities to get some metrics about GPUs currently
  * available on the machine running it.
  */
 
-#ifndef NVMEX_CLOCKS_H
-#define NVMEX_CLOCKS_H
+#ifndef NVMEX_BAR1MEMORY_H
+#define NVMEX_BAR1MEMORY_H
 
 #include "common.h"
 
@@ -25,17 +25,21 @@ extern "C" {
 #endif
 
 /**
- * Get clock metrics.
+ * Get BAR1 memory metrics.
+ * BAR1 is used to map the FB (device memory) so that it can be directly
+ * accessed by the CPU or by 3rd party devices (peer-to-peer on the PCIE bus).
+ * Kepler+.
+ *
  * @param sb	where to append the metrics.
  * @param compact	If \c true do not add prom descriptions and type comments.
  * @param devs	number of devices in \c devList.
  * @param devList	list of devices to query. Must not be \c NULL !
  * @return \c true if something got append to \c sb , \c false otherwise.
  */
-bool getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]);
+bool getBar1memory(psb_t *sb, bool compact, uint devs, gpu_t devList[]);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	// NVMEX_CLOCKS_H
+#endif	// NVMEX_BAR1MEMORY_H

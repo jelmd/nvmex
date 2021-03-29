@@ -45,13 +45,11 @@ stop(void) {
 	return 1;
 }
 
-#define BUF_MAX 256
-
 uint
 listDevices(psb_t *sb) {
 	nvmlReturn_t res;
 	uint devs, i;
-	char buf[BUF_MAX];
+	char buf[MBUF_SZ];
 	bool free_sb = sb == NULL;
 
 	// Does NOT count devices NVML has no permission to talk to.
@@ -79,6 +77,7 @@ listDevices(psb_t *sb) {
 			PROM_WARN("Failed to get device handle %u: %s\n", i, nverror(res));
 			continue;
 		}
+		// see also  nvmlDeviceGetArchitecture(dev, &arch): maps arch to string
 		res = nvmlDeviceGetName(dev, name, NVML_DEVICE_NAME_BUFFER_SIZE);
 		if (NVML_SUCCESS != res) { 
             printf("Failed to get name of device %u: %s\n", i,
@@ -92,7 +91,7 @@ listDevices(psb_t *sb) {
 			continue;
 		}
 		res = nvmlDeviceGetComputeMode(dev, &compute_mode);
-		snprintf(buf, BUF_MAX, "%u. %s [%s]   %sCUDA capable\n",
+		snprintf(buf, MBUF_SZ, "%u. %s [%s]   %sCUDA capable\n",
 			i, name, pci.busId, NVML_ERROR_NOT_SUPPORTED == res ? "not " : "");
 		psb_add_str(sb, buf);
 	}
@@ -109,7 +108,7 @@ getVersions(psb_t *sb) {
 	bool free_sb = sb == NULL;
 	nvmlReturn_t res;
 	int v;
-	char buf[BUF_MAX];
+	char buf[MBUF_SZ];
 
 	if (free_sb)
 		sb = psb_new();
@@ -119,12 +118,12 @@ getVersions(psb_t *sb) {
 		PROM_WARN("Failed to get CUDA driver version: %s\n", nverror(res));
 	} else {
 		int min = v%1000;
-		snprintf(buf, BUF_MAX, "CUDA driver version: %d.%d.%d\n",
+		snprintf(buf, MBUF_SZ, "CUDA driver version: %d.%d.%d\n",
 			v/1000, min/10, min%10);
 		psb_add_str(sb, buf);
 	}
 
-	res = nvmlSystemGetDriverVersion (buf, BUF_MAX);
+	res = nvmlSystemGetDriverVersion (buf, MBUF_SZ);
 	if (NVML_SUCCESS != res) {
 		PROM_WARN("Failed to get System driver version: %s\n", nverror(res));
 	} else {
@@ -133,7 +132,7 @@ getVersions(psb_t *sb) {
 		psb_add_char(sb, '\n');
 	}
 
-	res = nvmlSystemGetNVMLVersion (buf, BUF_MAX);
+	res = nvmlSystemGetNVMLVersion (buf, MBUF_SZ);
 	if (NVML_SUCCESS != res) {
 		PROM_WARN("Failed to get NVML version: %s\n", nverror(res));
 	} else {
@@ -141,7 +140,7 @@ getVersions(psb_t *sb) {
 		psb_add_str(sb, buf);
 		psb_add_char(sb, '\n');
 	}
-	//res = nvmlSystemGetProcessName (pid, buf, BUF_MAX) 	// maps pid to name
+	//res = nvmlSystemGetProcessName (pid, buf, MBUF_SZ) 	// maps pid to name
 
 	if (free_sb) {
 		fprintf(stderr, "\n%s", psb_str(sb));
@@ -155,7 +154,7 @@ uint
 getDevInfos(psb_t *sb) {
 	bool free_sb = sb == NULL;
 	nvmlReturn_t res;
-	//char buf[BUF_MAX];
+	//char buf[MBUF_SZ];
 	uint units;
 
 	res = nvmlUnitGetCount(&units);
@@ -187,7 +186,7 @@ getDevices(psb_t *sb, gpu_t *gpuList[]) {
 	uint devs, i, count = 0, k;
 	nvmlDevice_t *devList;
 	nvmlPciInfo_t pci;
-	char buf[BUF_MAX];
+	char buf[MBUF_SZ];
 	bool free_sb = sb == NULL;
 	size_t bytes;
 
@@ -246,13 +245,13 @@ getDevices(psb_t *sb, gpu_t *gpuList[]) {
 		} else {
 			(*gpuList)[k].pciId = strdup(pci.busId);
 		}
-		res = nvmlDeviceGetUUID((*gpuList)[k].dev, buf, BUF_MAX);
+		res = nvmlDeviceGetUUID((*gpuList)[k].dev, buf, MBUF_SZ);
 		if (NVML_SUCCESS != res) {
 			PROM_WARN("Failed to get UUID dev %u: %s", i, nverror(res));
 		} else {
 			(*gpuList)[k].uuid = strdup(buf);
 		}
-		snprintf(buf, BUF_MAX, "# gpu[%u]: %s  %s  %p\n", (*gpuList)[k].idx,
+		snprintf(buf, MBUF_SZ, "# gpu[%u]: %s  %s  %p\n", (*gpuList)[k].idx,
 			(*gpuList)[k].uuid, (*gpuList)[k].pciId, (void *)((*gpuList)[k]).dev);
 		psb_add_str(sb, buf);
 		k++;

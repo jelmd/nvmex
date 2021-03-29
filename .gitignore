@@ -11,5 +11,5 @@
 *tar.gz
 .vscode
 core
-nv-mex
-libnv-mex*
+nvmex
+libnvmex*
