@@ -249,7 +249,7 @@ getDevices(psb_t *sb, gpu_t *gpuList[]) {
 		if (NVML_SUCCESS != res) {
 			PROM_WARN("Failed to get UUID dev %u: %s", i, nverror(res));
 		} else {
-			(*gpuList)[k].uuid = strdup(buf);
+			(*gpuList)[k].uuid = strdup(buf + 4);	// now it is a propper UUID
 		}
 		snprintf(buf, MBUF_SZ, "# gpu[%u]: %s  %s  %p\n", (*gpuList)[k].idx,
 			(*gpuList)[k].uuid, (*gpuList)[k].pciId, (void *)((*gpuList)[k]).dev);

@@ -222,6 +222,7 @@ getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 	nvmlReturn_t res;
 	uint clockMHz, i, k;
 	char buf[MBUF_SZ];
+	gpu_t *gpu;
 	bool free_sb = sb == NULL;
 	size_t sz;
 
@@ -237,29 +238,51 @@ getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 	if (!compact)
 		addPromInfo(NVMEXM_CLOCK);
 	for (i = 0; i < devs; i++) {
-		if (devList[i].dev == NULL)
+		gpu = &(devList[i]);
+		if (gpu->dev == NULL)
 			continue;
-		if (devList[i].minMaxClock == NULL || devList[i].defaultClock == NULL)
-			setStaticClockVals(&(devList[i]), compact);
+		if (gpu->minMaxClock == NULL || gpu->defaultClock == NULL)
+			setStaticClockVals(gpu, compact);
 		for (k = 0; k < NVML_CLOCK_COUNT; k++) {
-			psb_add_str(sb, devList[i].defaultClock[k]);
-			psb_add_str(sb, devList[i].minMaxClock[k]);
+			psb_add_str(sb, (gpu->defaultClock)[k]);
+			psb_add_str(sb, gpu->minMaxClock[k]);
 			// current clock speed for the device. Fermi+
-			res = nvmlDeviceGetClockInfo(devList[i].dev, k, &clockMHz);
+			res = nvmlDeviceGetClockInfo(gpu->dev, k, &clockMHz);
 			if (NVML_SUCCESS == res) {
 				snprintf(buf, MBUF_SZ, NVMEXM_CLOCK_N
 				"{gpu=\"%d\",domain=\"%s\",clock=\"now\",uuid=\"%s\"} %u\n",
-				i, domain[k], devList[i].uuid, clockMHz);
+				i, domain[k], gpu->uuid, clockMHz);
 				psb_add_str(sb, buf);
 			}
 			// value to use unless an overspec situation. Kepler+
-			res = nvmlDeviceGetApplicationsClock(devList[i].dev, k, &clockMHz);
+			res = nvmlDeviceGetApplicationsClock(gpu->dev, k, &clockMHz);
 			if (NVML_SUCCESS == res) {
 				snprintf(buf, MBUF_SZ, NVMEXM_CLOCK_N
 				"{gpu=\"%d\",domain=\"%s\",clock=\"set\",uuid=\"%s\"} %u\n",
-				i, domain[k], devList[i].uuid, clockMHz);
+				i, domain[k], gpu->uuid, clockMHz);
 				psb_add_str(sb, buf);
 			}
+		}
+	}
+	if (!compact) {
+		psb_add_char(sb, '\n');
+		addPromInfo(NVMEXM_CLOCK_THROTTLE);
+	}
+	for (i = 0; i < devs; i++) {
+		unsigned long long reasons;
+		gpu = &(devList[i]);
+		if (gpu->dev == NULL || gpu->hasClockThrottle == -1)
+			continue;
+		res = nvmlDeviceGetCurrentClocksThrottleReasons(gpu->dev, &reasons);
+		if (NVML_SUCCESS == res) {
+			snprintf(buf, MBUF_SZ,
+				NVMEXM_CLOCK_THROTTLE_N "{gpu=\"%d\",uuid=\"%s\"} %lld\n",
+				i, gpu->uuid, reasons);
+			psb_add_str(sb, buf);
+			gpu->hasClockThrottle = 1;
+		} else if (NOT_AVAIL(res)) {
+			PROM_DEBUG("gpu.hasClockThrottle = -1", "");
+			gpu->hasClockThrottle = -1;
 		}
 	}
 

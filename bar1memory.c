@@ -47,6 +47,7 @@ getBar1memory(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 			psb_add_str(sb, buf);
 			gpu.hasBar1memory = 1;
 		} else if (NOT_AVAIL(res)) {
+			PROM_DEBUG("gpu.hasBar1memory = -1", "");
 			gpu.hasBar1memory = -1;
 		}
 	}

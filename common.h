@@ -40,6 +40,7 @@ typedef struct gpu_st {
 	char	**minMaxClock;	//<! PROM metrics for minMax Clocks 
 	char	**defaultClock;	//<! PROM metrics for default Clock
 	uint	idx;			//!< NVML index of the GPU. May change on reboot.
+	char	hasClockThrottle;
 	char	hasBar1memory;
 } gpu_t;
 
@@ -57,6 +58,10 @@ typedef struct gpu_st {
 #define NVMEXM_CLOCK_D "GPU clock speeds in MHz."
 #define NVMEXM_CLOCK_T "gauge"
 #define NVMEXM_CLOCK_N "nvmex_clock_mhz"
+
+#define NVMEXM_CLOCK_THROTTLE_D "Current reasons for GPU clock throttling."
+#define NVMEXM_CLOCK_THROTTLE_T "gauge"
+#define NVMEXM_CLOCK_THROTTLE_N "nvmex_clock_throttle_bitmask"
 
 #define NVMEXM_BAR1MEM_D "BAR1 memory in bytes."
 #define NVMEXM_BAR1MEM_T "gauge"
