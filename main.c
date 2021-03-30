@@ -27,6 +27,7 @@
 #include "inspect.h"
 #include "clocks.h"
 #include "bar1memory.h"
+#include "temperature.h"
 
 static struct option options[] = {
 	{"no-scrapetime",		no_argument,		NULL, 'L'},
@@ -64,6 +65,7 @@ static struct {
 	uint promflags;
 	bool clocks;
 	bool bar1mem;
+	bool temperature;
 	gpu_t *devList;
 	unsigned int devs;
 	prom_counter_t *req_counter;
@@ -78,6 +80,7 @@ static struct {
 	.promflags = PROM_PROCESS | PROM_SCRAPETIME | PROM_SCRAPETIME_ALL,
 	.clocks = true,
 	.bar1mem = true,
+	.temperature = true,
 	.devList = NULL,
 	.devs = 0,
 	.req_counter = NULL,
@@ -123,6 +126,8 @@ collect(prom_collector_t *self) {
 		getClocks(sb, compact, global.devs, global.devList);
 	if (global.bar1mem)
 		getBar1memory(sb, compact, global.devs, global.devList);
+	if (global.temperature)
+		getTemperatures(sb, compact, global.devs, global.devList);
 	return NULL;
 }
 
@@ -414,6 +419,8 @@ disableMetrics(char *clist) {
 				global.clocks = false;
 			else if (strcmp(s, "bar1mem") == 0)
 				global.bar1mem = false;
+			else if (strcmp(s, "temperatures") == 0)
+				global.temperature = false;
 			else {
 				PROM_WARN("Unknown metrics '%s'", s);
 				res++;

@@ -39,9 +39,12 @@ typedef struct gpu_st {
 	char	*pciId;	//!< PCI BUS ID - survives reboot if slot does not change.
 	char	**minMaxClock;	//<! PROM metrics for minMax Clocks 
 	char	**defaultClock;	//<! PROM metrics for default Clock
+	char	*temperatures;	//<! static temperature values
 	uint	idx;			//!< NVML index of the GPU. May change on reboot.
 	char	hasClockThrottle;
 	char	hasBar1memory;
+	char	hasTemperature;
+	char	hasTemperatureMem;
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -67,10 +70,13 @@ typedef struct gpu_st {
 #define NVMEXM_BAR1MEM_T "gauge"
 #define NVMEXM_BAR1MEM_N "nvmex_bar1mem_bytes"
 
+#define NVMEXM_TEMPERATURE_D "Device temperatures and thresholds in degrees celsius."
+#define NVMEXM_TEMPERATURE_T "gauge"
+#define NVMEXM_TEMPERATURE_N "nvmex_temperature_celsius"
 /*
-#define NVMEX_XXX_UUU_D "short description."
-#define NVMEX_XXX_UUU_T "gauge"
-#define NVMEX_XXX_UUU_N "nvmex_yyy_uuu"
+#define NVMEXM_XXX_D "short description."
+#define NVMEXM_XXX_T "gauge"
+#define NVMEXM_XXX_N "nvmex_yyy"
  */
 
 #ifdef __cplusplus

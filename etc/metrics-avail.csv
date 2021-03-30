@@ -58,17 +58,17 @@
 130, #DEV_SUPPORTED_CLOCKS, gauge, Supported clocks for the device.
 
 # Temperature,,
-140, DEV_MEMORY_TEMP, gauge, Memory temperature (in C).
-150, DEV_GPU_TEMP,    gauge, GPU temperature (in C).
-151, DEV_MEM_MAX_OP_TEMP, gauge, Maximum operating temperature for the memory of this GPU.
-152, DEV_GPU_MAX_OP_TEMP, gauge, Maximum operating temperature for this GPU.
+140, DEV_MEMORY_TEMP, gauge, Memory temperature (in C).	# no API - TBD
+150, #DEV_GPU_TEMP,    gauge, GPU temperature (in C).
+151, #DEV_MEM_MAX_OP_TEMP, gauge, Maximum operating temperature for the memory of this GPU.
+152, #DEV_GPU_MAX_OP_TEMP, gauge, Maximum operating temperature for this GPU.
 
 # Power,,
 155, DEV_POWER_USAGE,              gauge, Power draw (in W).
 156, DEV_TOTAL_ENERGY_CONSUMPTION, counter, Total energy consumption since boot (in mJ).
 
-158, DEV_SLOWDOWN_TEMP, gauge, Slowdown temperature for the device.
-159, DEV_SHUTDOWN_TEMP, gauge, Shutdown temperature for the device.
+158, #DEV_SLOWDOWN_TEMP, gauge, Slowdown temperature for the device.
+159, #DEV_SHUTDOWN_TEMP, gauge, Shutdown temperature for the device.
 160, DEV_POWER_MGMT_LIMIT, gauge, Current Power limit for the device.
 161, DEV_POWER_MGMT_LIMIT_MIN, gauge, Minimum power management limit for the device.
 162, DEV_POWER_MGMT_LIMIT_MAX, gauge, Maximum power management limit for the device.
