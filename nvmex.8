@@ -58,7 +58,6 @@ recommended to adjust your firewalls and/or HTTP proxies accordingly.
 If you need SSL or authentication, use a HTTP proxy like nginx - for now
 \fBnvmex\fR should be kept small and simple.
 
-
 .SH "OPTIONS"
 .TP 4
 .B \-L
@@ -143,6 +142,9 @@ All \fBnvmex_bar1mem_bytes\fR metrics (nvidia collector).
 .TP 4
 .B temperatures
 All \fBnvmex_temperature_celsius\fR metrics (nvidia collector).
+.TP 4
+.B power
+All \fBnvmex_power_*\fR and \fBnvmex_perf\fR metrics (nvidia collector).
 
 .RE
 
@@ -205,6 +207,10 @@ level will be used.
 The character special devices used by the NVML to access GPUs.
 
 .SH "NOTES"
+\fBnvmex\fR collects static data like min and max GPU temperature or power
+limits only once, prom formats them, and from now on just copies the cached
+strings on each request. So if the kernel modul gets reloaded or GPU gets
+reset, or GPU enumeration changes, one should restart \fBnvmex\fR as well.
 
 .SH "BUGS"
 https://github.com/jelmd/nvmex is the official source code repository

@@ -28,6 +28,20 @@
 #include "clocks.h"
 #include "bar1memory.h"
 #include "temperature.h"
+#include "power.h"
+
+typedef enum {
+	SMF_EXIT_OK	= 0,
+	SMF_EXIT_ERR_OTHER,
+	SMF_EXIT_ERR_FATAL = 95,
+	SMF_EXIT_ERR_CONFIG,
+	SMF_EXIT_MON_DEGRADE,
+	SMF_EXIT_MON_OFFLINE,
+	SMF_EXIT_ERR_NOSMF,
+	SMF_EXIT_ERR_PERM,
+	SMF_EXIT_TEMP_DISABLE,
+	SMF_EXIT_TEMP_TRANSIENT
+} SMF_EXIT_CODE;
 
 static struct option options[] = {
 	{"no-scrapetime",		no_argument,		NULL, 'L'},
@@ -48,24 +62,12 @@ static const char *shortUsage = {
 	"[-LScdfh] [-l file] [-n list] [-s ip] [-p port] [-v DEBUG|INFO|WARN|ERROR|FATAL]"
 };
 
-typedef enum {
-	SMF_EXIT_OK	= 0,
-	SMF_EXIT_ERR_OTHER,
-	SMF_EXIT_ERR_FATAL = 95,
-	SMF_EXIT_ERR_CONFIG,
-	SMF_EXIT_MON_DEGRADE,
-	SMF_EXIT_MON_OFFLINE,
-	SMF_EXIT_ERR_NOSMF,
-	SMF_EXIT_ERR_PERM,
-	SMF_EXIT_TEMP_DISABLE,
-	SMF_EXIT_TEMP_TRANSIENT
-} SMF_EXIT_CODE;
-
 static struct {
 	uint promflags;
 	bool clocks;
 	bool bar1mem;
 	bool temperature;
+	bool power;
 	gpu_t *devList;
 	unsigned int devs;
 	prom_counter_t *req_counter;
@@ -81,6 +83,7 @@ static struct {
 	.clocks = true,
 	.bar1mem = true,
 	.temperature = true,
+	.power = true,
 	.devList = NULL,
 	.devs = 0,
 	.req_counter = NULL,
@@ -92,6 +95,68 @@ static struct {
 	.MHD_error = -1,
 	.logfile = NULL
 };
+
+static int
+disableMetrics(char *clist) {
+	char *s, *e;
+	size_t len;
+	int res = 0;
+
+	if (clist == NULL)
+		return 0;
+
+	len = strlen(clist);
+	if (len == 0)
+		return 0;
+	e = clist + len;
+	s = e;
+	while (s > clist) {
+		s--;
+		if (*s != ',' && s != clist)
+			continue;
+		if (s != clist)
+			s++;
+		if (s != e) {
+			if (strcmp(s, "process") == 0)
+				global.promflags &= ~PROM_PROCESS;
+			else if (strcmp(s, "clocks") == 0)
+				global.clocks = false;
+			else if (strcmp(s, "bar1mem") == 0)
+				global.bar1mem = false;
+			else if (strcmp(s, "temperatures") == 0)
+				global.temperature = false;
+			else if (strcmp(s, "power") == 0)
+				global.power = false;
+			else {
+				PROM_WARN("Unknown metrics '%s'", s);
+				res++;
+			}
+		}
+		if (s != clist)
+			s--;
+		*s = '\0';
+		e = s;
+	}
+	return res;
+}
+
+// Just in case, someone switches to MHD_USE_THREAD_PER_CONNECTION
+static _Thread_local psb_t *sb = NULL;
+
+static prom_map_t *
+collect(prom_collector_t *self) {
+	bool compact = global.promflags & PROM_COMPACT;
+	PROM_DEBUG("collector: %p  sb: %p", self, sb);
+	if (global.clocks)
+		getClocks(sb, compact, global.devs, global.devList);
+	if (global.bar1mem)
+		getBar1memory(sb, compact, global.devs, global.devList);
+	if (global.temperature)
+		getTemperatures(sb, compact, global.devs, global.devList);
+	if (global.power)
+		getPower(sb, compact, global.devs, global.devList);
+	return NULL;
+}
 
 // generate the short option string for getopts from <opts>
 static char *
@@ -113,22 +178,6 @@ getShortOpts(const struct option *opts) {
 	}
 	str[k] = '\0';
 	return str;
-}
-
-// Just in case, someone switches to MHD_USE_THREAD_PER_CONNECTION
-static _Thread_local psb_t *sb = NULL;
-
-static prom_map_t *
-collect(prom_collector_t *self) {
-	bool compact = global.promflags & PROM_COMPACT;
-	PROM_DEBUG("collector: %p  sb: %p", self, sb);
-	if (global.clocks)
-		getClocks(sb, compact, global.devs, global.devList);
-	if (global.bar1mem)
-		getBar1memory(sb, compact, global.devs, global.devList);
-	if (global.temperature)
-		getTemperatures(sb, compact, global.devs, global.devList);
-	return NULL;
 }
 
 #pragma GCC diagnostic push
@@ -390,48 +439,6 @@ daemonize(void) {
 	}
 
 	return pfd[1];
-}
-
-int
-disableMetrics(char *clist) {
-	char *s, *e;
-	size_t len;
-	int res = 0;
-
-	if (clist == NULL)
-		return 0;
-
-	len = strlen(clist);
-	if (len == 0)
-		return 0;
-	e = clist + len;
-	s = e;
-	while (s > clist) {
-		s--;
-		if (*s != ',' && s != clist)
-			continue;
-		if (s != clist)
-			s++;
-		if (s != e) {
-			if (strcmp(s, "process") == 0)
-				global.promflags &= ~PROM_PROCESS;
-			else if (strcmp(s, "clocks") == 0)
-				global.clocks = false;
-			else if (strcmp(s, "bar1mem") == 0)
-				global.bar1mem = false;
-			else if (strcmp(s, "temperatures") == 0)
-				global.temperature = false;
-			else {
-				PROM_WARN("Unknown metrics '%s'", s);
-				res++;
-			}
-		}
-		if (s != clist)
-			s--;
-		*s = '\0';
-		e = s;
-	}
-	return res;
 }
 
 int

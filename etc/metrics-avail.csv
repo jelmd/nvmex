@@ -64,17 +64,17 @@
 152, #DEV_GPU_MAX_OP_TEMP, gauge, Maximum operating temperature for this GPU.
 
 # Power,,
-155, DEV_POWER_USAGE,              gauge, Power draw (in W).
-156, DEV_TOTAL_ENERGY_CONSUMPTION, counter, Total energy consumption since boot (in mJ).
+155, #DEV_POWER_USAGE,              gauge, Power draw (in W).
+156, #DEV_TOTAL_ENERGY_CONSUMPTION, counter, Total energy consumption since boot (in mJ).
 
 158, #DEV_SLOWDOWN_TEMP, gauge, Slowdown temperature for the device.
 159, #DEV_SHUTDOWN_TEMP, gauge, Shutdown temperature for the device.
-160, DEV_POWER_MGMT_LIMIT, gauge, Current Power limit for the device.
-161, DEV_POWER_MGMT_LIMIT_MIN, gauge, Minimum power management limit for the device.
-162, DEV_POWER_MGMT_LIMIT_MAX, gauge, Maximum power management limit for the device.
-163, DEV_POWER_MGMT_LIMIT_DEF, gauge, Default power management limit for the device.
-164, DEV_ENFORCED_POWER_LIMIT, gauge, Effective power limit that the driver enforces after taking into account all limiters.
-190, DEV_PSTATE, gauge, Performance state (P-State) 0-15. 0=highest.
+160, #DEV_POWER_MGMT_LIMIT, gauge, Current Power limit for the device.
+161, #DEV_POWER_MGMT_LIMIT_MIN, gauge, Minimum power management limit for the device.
+162, #DEV_POWER_MGMT_LIMIT_MAX, gauge, Maximum power management limit for the device.
+163, #DEV_POWER_MGMT_LIMIT_DEF, gauge, Default power management limit for the device.
+164, #DEV_ENFORCED_POWER_LIMIT, gauge, Effective power limit that the driver enforces after taking into account all limiters.
+190, #DEV_PSTATE, gauge, Performance state (P-State) 0-15. 0=highest.
 191, DEV_FAN_SPEED, gauge, Fan speed for the device in percent 0-100.
 
 # PCIE,,

@@ -40,11 +40,16 @@ typedef struct gpu_st {
 	char	**minMaxClock;	//<! PROM metrics for minMax Clocks 
 	char	**defaultClock;	//<! PROM metrics for default Clock
 	char	*temperatures;	//<! static temperature values
+	char	*powerlimits;	//<! static power limits
 	uint	idx;			//!< NVML index of the GPU. May change on reboot.
 	char	hasClockThrottle;
 	char	hasBar1memory;
 	char	hasTemperature;
 	char	hasTemperatureMem;
+	char	hasPowerConsum;
+	char	hasPowerLimit;
+	char	hasPower;
+	char	hasPstate;
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -60,7 +65,7 @@ typedef struct gpu_st {
 
 #define NVMEXM_CLOCK_D "GPU clock speeds in MHz."
 #define NVMEXM_CLOCK_T "gauge"
-#define NVMEXM_CLOCK_N "nvmex_clock_mhz"
+#define NVMEXM_CLOCK_N "nvmex_clock_MHz"
 
 #define NVMEXM_CLOCK_THROTTLE_D "Current reasons for GPU clock throttling."
 #define NVMEXM_CLOCK_THROTTLE_T "gauge"
@@ -68,11 +73,24 @@ typedef struct gpu_st {
 
 #define NVMEXM_BAR1MEM_D "BAR1 memory in bytes."
 #define NVMEXM_BAR1MEM_T "gauge"
-#define NVMEXM_BAR1MEM_N "nvmex_bar1mem_bytes"
+#define NVMEXM_BAR1MEM_N "nvmex_bar1mem_B"
 
 #define NVMEXM_TEMPERATURE_D "Device temperatures and thresholds in degrees celsius."
 #define NVMEXM_TEMPERATURE_T "gauge"
-#define NVMEXM_TEMPERATURE_N "nvmex_temperature_celsius"
+#define NVMEXM_TEMPERATURE_N "nvmex_temperature_C"
+
+#define NVMEXM_POWER_CONSUM_D "Power consumption since last driver [re]load in millijoule."
+#define NVMEXM_POWER_CONSUM_T "counter"
+#define NVMEXM_POWER_CONSUM_N "nvmex_power_consumption_mJ"
+
+#define NVMEXM_POWER_D "Power usage and limits in milliwatt."
+#define NVMEXM_POWER_T "gauge"
+#define NVMEXM_POWER_N "nvmex_power_mW"
+
+#define NVMEXM_PSTATE_D "Current performance state (0=max .. 15=min)."
+#define NVMEXM_PSTATE_T "gauge"
+#define NVMEXM_PSTATE_N "nvmex_perf_state"
+
 /*
 #define NVMEXM_XXX_D "short description."
 #define NVMEXM_XXX_T "gauge"
