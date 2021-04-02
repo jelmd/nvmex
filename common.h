@@ -54,11 +54,13 @@ typedef struct gpu_st {
 
 #define MBUF_SZ 256
 
-#define addPromInfo(metric) \
+#define addPromInfo(metric) {\
+	psb_add_char(sb, '\n');\
 	psb_add_str(sb, "# HELP " metric ## _N " " metric ## _D );\
 	psb_add_char(sb, '\n');\
 	psb_add_str(sb, "# TYPE " metric ## _N " " metric ## _T);\
 	psb_add_char(sb, '\n');\
+}
 
 #define NOT_AVAIL(x) \
 	((x) == NVML_ERROR_NOT_SUPPORTED || (x) == NVML_ERROR_GPU_IS_LOST)

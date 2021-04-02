@@ -155,6 +155,10 @@ collect(prom_collector_t *self) {
 		getTemperatures(sb, compact, global.devs, global.devList);
 	if (global.power)
 		getPower(sb, compact, global.devs, global.devList);
+	if (global.fan)
+		getFan(sb, compact, global.devs, global.devList);
+	if (sb != NULL && !compact)
+		psb_add_char(sb, '\n');
 	return NULL;
 }
 

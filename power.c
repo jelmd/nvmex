@@ -83,10 +83,8 @@ getPower(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 		}
 	}
 
-	if (!compact) {
-		psb_add_char(sb, '\n');
+	if (!compact)
 		addPromInfo(NVMEXM_PSTATE);
-	}
 	for (i = 0; i < devs; i++) {
 		nvmlPstates_t state;
 		gpu = &(devList[i]);
@@ -105,10 +103,8 @@ getPower(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 		}
 	}
 
-	if (!compact) {
-		psb_add_char(sb, '\n');
+	if (!compact)
 		addPromInfo(NVMEXM_POWER);
-	}
 	for (i = 0; i < devs; i++) {
 		gpu = &(devList[i]);
 		if (gpu->dev == NULL)

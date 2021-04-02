@@ -264,10 +264,8 @@ getClocks(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 			}
 		}
 	}
-	if (!compact) {
-		psb_add_char(sb, '\n');
+	if (!compact)
 		addPromInfo(NVMEXM_CLOCK_THROTTLE);
-	}
 	for (i = 0; i < devs; i++) {
 		unsigned long long reasons;
 		gpu = &(devList[i]);

@@ -18,7 +18,7 @@ LogsDirectory=nvmex
 Restart=always
 RestartSec=1
 RestartPreventExitStatus=1 95 96 97 98 99 100 101 102
-ExecStart=/usr/sbin/nvmex -d $ARGS
+ExecStart=/usr/sbin/nvmex -l %L/nvmex/nvmex.log -d $ARGS
 ExecStop=/bin/kill -s SIGTERM $MAINPID
 TimeoutSec=3
 

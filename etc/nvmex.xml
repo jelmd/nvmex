@@ -37,7 +37,7 @@
 
 		<!-- Service start/stop methods -->
 		<exec_method timeout_seconds='5' type='method' name='start'
-			exec='/usr/sbin/nvmex -d -p %{config/port} %{config/args}'>
+			exec='/usr/sbin/nvmex -d -l %{config/logfile} -p %{config/port} %{config/args}'>
 			<method_context>
 				<!-- NVML needs access to /dev/nvidiaN and
 					/dev/nvidiactl which is owned read-only by root.
@@ -54,6 +54,7 @@
 		<property_group name='config' type='application'>
 			<stability value='Evolving' />
 			<propval name='port' type='integer' value='9400' />
+			<propval name='logfile' type='astring' value='/var/log/nvmex.log'/>
 			<propval name='args' type='astring' value=''/>
 		</property_group>
 
