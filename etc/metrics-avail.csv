@@ -75,7 +75,7 @@
 163, #DEV_POWER_MGMT_LIMIT_DEF, gauge, Default power management limit for the device.
 164, #DEV_ENFORCED_POWER_LIMIT, gauge, Effective power limit that the driver enforces after taking into account all limiters.
 190, #DEV_PSTATE, gauge, Performance state (P-State) 0-15. 0=highest.
-191, DEV_FAN_SPEED, gauge, Fan speed for the device in percent 0-100.
+191, #DEV_FAN_SPEED, gauge, Fan speed for the device in percent 0-100.
 
 # PCIE,,
 200, DEV_PCIE_TX_THROUGHPUT,  counter, Total number of bytes transmitted through PCIe TX (in KB) via NVML.

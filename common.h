@@ -50,6 +50,7 @@ typedef struct gpu_st {
 	char	hasPowerLimit;
 	char	hasPower;
 	char	hasPstate;
+	char	hasFan;
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -93,10 +94,15 @@ typedef struct gpu_st {
 #define NVMEXM_PSTATE_T "gauge"
 #define NVMEXM_PSTATE_N "nvmex_perf_state"
 
+#define NVMEXM_FAN_D "Fan speed settings in percent."
+#define NVMEXM_FAN_T "gauge"
+#define NVMEXM_FAN_N "nvmex_fan_speed_pct"
+
 /*
 #define NVMEXM_XXX_D "short description."
 #define NVMEXM_XXX_T "gauge"
 #define NVMEXM_XXX_N "nvmex_yyy"
+
  */
 
 #ifdef __cplusplus

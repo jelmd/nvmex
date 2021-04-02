@@ -29,6 +29,7 @@
 #include "bar1memory.h"
 #include "temperature.h"
 #include "power.h"
+#include "fan.h"
 
 typedef enum {
 	SMF_EXIT_OK	= 0,
@@ -68,6 +69,7 @@ static struct {
 	bool bar1mem;
 	bool temperature;
 	bool power;
+	bool fan;
 	gpu_t *devList;
 	unsigned int devs;
 	prom_counter_t *req_counter;
@@ -84,6 +86,7 @@ static struct {
 	.bar1mem = true,
 	.temperature = true,
 	.power = true,
+	.fan = true,
 	.devList = NULL,
 	.devs = 0,
 	.req_counter = NULL,
@@ -127,6 +130,8 @@ disableMetrics(char *clist) {
 				global.temperature = false;
 			else if (strcmp(s, "power") == 0)
 				global.power = false;
+			else if (strcmp(s, "fan") == 0)
+				global.fan = false;
 			else {
 				PROM_WARN("Unknown metrics '%s'", s);
 				res++;
