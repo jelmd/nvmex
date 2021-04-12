@@ -288,6 +288,9 @@ cleanup(uint devs, gpu_t *devList[]) {
 				free((*devList)[i].defaultClock[k]);
 			free((*devList)[i].defaultClock);
 		}
+		free((*devList)[i].temperatures);
+		free((*devList)[i].powerlimits);
+		free((*devList)[i].pcieLinkInfo);
 		(*devList)[i].dev = NULL;
 	}
 	free(*devList);

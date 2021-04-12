@@ -92,8 +92,8 @@ SONAME= $(SOBN).$(DYNLIB_MAJOR)
 LIBSRCS= inspect.c
 LIBOBJS= $(LIBSRCS:%.c=%.o)
 
-PROGSRCS = main.c inspect.c clocks.c bar1memory.c temperature.c power.c fan.c
-#gnugetopt.c
+PROGSRCS = main.c inspect.c clocks.c bar1memory.c temperature.c power.c fan.c \
+	util.c pcie.c
 PROGOBJS = $(PROGSRCS:%.c=%.o) 
 
 all:	$(PROGS)

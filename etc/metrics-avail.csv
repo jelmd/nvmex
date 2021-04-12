@@ -78,16 +78,16 @@
 191, #DEV_FAN_SPEED, gauge, Fan speed for the device in percent 0-100.
 
 # PCIE,,
-200, DEV_PCIE_TX_THROUGHPUT,  counter, Total number of bytes transmitted through PCIe TX (in KB) via NVML.
-201, DEV_PCIE_RX_THROUGHPUT,  counter, Total number of bytes received through PCIe RX (in KB) via NVML.
-202, DEV_PCIE_REPLAY_COUNTER, counter, Total number of PCIe retries.
+200, #DEV_PCIE_TX_THROUGHPUT,  counter, Total number of bytes transmitted through PCIe TX (in KB) via NVML.
+201, #DEV_PCIE_RX_THROUGHPUT,  counter, Total number of bytes received through PCIe RX (in KB) via NVML.
+202, #DEV_PCIE_REPLAY_COUNTER, counter, Total number of PCIe retries.
 
 # Utilization (the sample period varies depending on the product),,
-203, DEV_GPU_UTIL,      gauge, GPU utilization (in %).
-204, DEV_MEM_COPY_UTIL, gauge, Memory utilization (in %).
+203, #DEV_GPU_UTIL,      gauge, GPU utilization (in %).
+204, #DEV_MEM_COPY_UTIL, gauge, Memory utilization (in %).
 205, DEV_ACCOUNTING_DATA, gauge, Process accounting stats.
-206, DEV_ENC_UTIL,      gauge, Encoder utilization (in %).
-207, DEV_DEC_UTIL ,     gauge, Decoder utilization (in %).
+206, #DEV_ENC_UTIL,      gauge, Encoder utilization (in %).
+207, #DEV_DEC_UTIL ,     gauge, Decoder utilization (in %).
 
 210, DEV_MEM_COPY_UTIL_SAMPLES, gauge, Memory utilization samples.
 220, DEV_GRAPHICS_PIDS, gauge, Graphics processes running on the GPU.
@@ -96,10 +96,10 @@
 # Errors and violations,,
 230, DEV_XID_ERRORS,            gauge,   Value of the last XID error encountered.
 
-235, DEV_PCIE_MAX_LINK_GEN, gauge, PCIe Max Link Generation.
-236, DEV_PCIE_MAX_LINK_WIDTH, gauge, PCIe Max Link Width.
-237, DEV_PCIE_LINK_GEN, gauge, PCIe Current Link Generation.
-238, DEV_PCIE_LINK_WIDTH, gauge, PCIe Current Link Width.
+235, #DEV_PCIE_MAX_LINK_GEN, gauge, PCIe Max Link Generation.
+236, #DEV_PCIE_MAX_LINK_WIDTH, gauge, PCIe Max Link Width.
+237, #DEV_PCIE_LINK_GEN, gauge, PCIe Current Link Generation.
+238, #DEV_PCIE_LINK_WIDTH, gauge, PCIe Current Link Width.
 
 240, DEV_POWER_VIOLATION,       counter, Throttling duration due to power constraints (in us).
 241, DEV_THERMAL_VIOLATION,     counter, Throttling duration due to thermal constraints (in us).

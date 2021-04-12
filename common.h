@@ -41,6 +41,7 @@ typedef struct gpu_st {
 	char	**defaultClock;	//<! PROM metrics for default Clock
 	char	*temperatures;	//<! static temperature values
 	char	*powerlimits;	//<! static power limits
+	char	*pcieLinkInfo;	//<! static PCIe infos
 	uint	idx;			//!< NVML index of the GPU. May change on reboot.
 	char	hasClockThrottle;
 	char	hasBar1memory;
@@ -51,6 +52,10 @@ typedef struct gpu_st {
 	char	hasPower;
 	char	hasPstate;
 	char	hasFan;
+	char	hasUtil;
+	char	hasDecoderUtil;
+	char	hasPCIeUtil;
+	char	hasPCIeReplay;
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -97,6 +102,22 @@ typedef struct gpu_st {
 #define NVMEXM_FAN_D "Fan speed settings in percent."
 #define NVMEXM_FAN_T "gauge"
 #define NVMEXM_FAN_N "nvmex_fan_speed_pct"
+
+#define NVMEXM_UTIL_D "GPU device utilizations in percent."
+#define NVMEXM_UTIL_T "gauge"
+#define NVMEXM_UTIL_N "nvmex_util_pct"
+
+#define NVMEXM_PCIE_UTIL_D "PCIe utilization in bytes/s measured for 20 ms."
+#define NVMEXM_PCIE_UTIL_T "gauge"
+#define NVMEXM_PCIE_UTIL_N "nvmex_pcie_util_Bps"
+
+#define NVMEXM_PCIE_REPLAY_D "PCIe replay count."
+#define NVMEXM_PCIE_REPLAY_T "counter"
+#define NVMEXM_PCIE_REPLAY_N "nvmex_pcie_replay_total"
+
+#define NVMEXM_PCIE_LINK_D "PCIe link information."
+#define NVMEXM_PCIE_LINK_T "counter"
+#define NVMEXM_PCIE_LINK_N "nvmex_pcie_link"
 
 /*
 #define NVMEXM_XXX_D "short description."
