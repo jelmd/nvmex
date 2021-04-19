@@ -101,18 +101,17 @@
 237, #DEV_PCIE_LINK_GEN, gauge, PCIe Current Link Generation.
 238, #DEV_PCIE_LINK_WIDTH, gauge, PCIe Current Link Width.
 
-240, DEV_POWER_VIOLATION,       counter, Throttling duration due to power constraints (in us).
-241, DEV_THERMAL_VIOLATION,     counter, Throttling duration due to thermal constraints (in us).
-242, DEV_SYNC_BOOST_VIOLATION,  counter, Throttling duration due to sync-boost constraints (in us).
-243, DEV_BOARD_LIMIT_VIOLATION, counter, Throttling duration due to board limit constraints (in us).
-244, DEV_LOW_UTIL_VIOLATION,    counter, Throttling duration due to low utilization (in us).
-245, DEV_RELIABILITY_VIOLATION, counter, Throttling duration due to reliability constraints (in us).
-
-246, DEV_TOTAL_APP_CLOCKS_VIOLATION, gauge, App clock violation limit.
-247, DEV_TOTAL_BASE_CLOCKS_VIOLATION, gauge, Base clock violation limit.
-250, DEV_FB_TOTAL, gauge, Total Frame Buffer of the GPU in MB.
+240, #DEV_POWER_VIOLATION,       counter, Throttling duration due to power constraints (in us).
+241, #DEV_THERMAL_VIOLATION,     counter, Throttling duration due to thermal constraints (in us).
+242, #DEV_SYNC_BOOST_VIOLATION,  counter, Throttling duration due to sync-boost constraints (in us).
+243, #DEV_BOARD_LIMIT_VIOLATION, counter, Throttling duration due to board limit constraints (in us).
+244, #DEV_LOW_UTIL_VIOLATION,    counter, Throttling duration due to low utilization (in us).
+245, #DEV_RELIABILITY_VIOLATION, counter, Throttling duration due to reliability constraints (in us).
+246, #DEV_TOTAL_APP_CLOCKS_VIOLATION, gauge, App clock violation limit.
+247, #DEV_TOTAL_BASE_CLOCKS_VIOLATION, gauge, Base clock violation limit.
 
 # Memory usage,,
+250, DEV_FB_TOTAL, gauge, Total Frame Buffer of the GPU in MB.
 251, DEV_FB_FREE, gauge, Framebuffer memory free (in MiB).
 252, DEV_FB_USED, gauge, Framebuffer memory used (in MiB).
 

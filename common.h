@@ -43,6 +43,7 @@ typedef struct gpu_st {
 	char	*powerlimits;	//<! static power limits
 	char	*pcieLinkInfo;	//<! static PCIe infos
 	uint	idx;			//!< NVML index of the GPU. May change on reboot.
+	int		hasViolation;	//!< Bitmask about supported violation durations
 	char	hasClockThrottle;
 	char	hasBar1memory;
 	char	hasTemperature;
@@ -118,6 +119,10 @@ typedef struct gpu_st {
 #define NVMEXM_PCIE_LINK_D "PCIe link information."
 #define NVMEXM_PCIE_LINK_T "counter"
 #define NVMEXM_PCIE_LINK_N "nvmex_pcie_link"
+
+#define NVMEXM_VIOL_D "How long a policy caused the GPU to be below application or base clocks."
+#define NVMEXM_VIOL_T "counter"
+#define NVMEXM_VIOL_N "nvmex_violation_penalty_ms"
 
 /*
 #define NVMEXM_XXX_D "short description."
