@@ -124,6 +124,10 @@ typedef struct gpu_st {
 #define NVMEXM_VIOL_T "counter"
 #define NVMEXM_VIOL_N "nvmex_violation_penalty_ms"
 
+#define NVMEXM_MEM_D "Device memory in bytes."
+#define NVMEXM_MEM_T "gauge"
+#define NVMEXM_MEM_N "nvmex_memory_bytes"
+
 /*
 #define NVMEXM_XXX_D "short description."
 #define NVMEXM_XXX_T "gauge"

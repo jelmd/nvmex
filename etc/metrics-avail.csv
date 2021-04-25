@@ -111,9 +111,9 @@
 247, #DEV_TOTAL_BASE_CLOCKS_VIOLATION, gauge, Base clock violation limit.
 
 # Memory usage,,
-250, DEV_FB_TOTAL, gauge, Total Frame Buffer of the GPU in MB.
-251, DEV_FB_FREE, gauge, Framebuffer memory free (in MiB).
-252, DEV_FB_USED, gauge, Framebuffer memory used (in MiB).
+250, #DEV_FB_TOTAL, gauge, Total Frame Buffer of the GPU in MB.
+251, #DEV_FB_FREE, gauge, Framebuffer memory free (in MiB).
+252, #DEV_FB_USED, gauge, Framebuffer memory used (in MiB).
 
 300, DEV_ECC_CURRENT, gauge, Current ECC mode for the device.
 301, DEV_ECC_PENDING, gauge, Pending ECC mode for the device.

@@ -33,6 +33,7 @@
 #include "util.h"
 #include "pcie.h"
 #include "violations.h"
+#include "memory.h"
 
 typedef enum {
 	SMF_EXIT_OK	= 0,
@@ -76,6 +77,7 @@ static struct {
 	bool util;
 	bool pcie;
 	bool violations;
+	bool memory;
 	gpu_t *devList;
 	unsigned int devs;
 	prom_counter_t *req_counter;
@@ -96,6 +98,7 @@ static struct {
 	.util = true,
 	.pcie = true,
 	.violations = true,
+	.memory = true,
 	.devList = NULL,
 	.devs = 0,
 	.req_counter = NULL,
@@ -147,6 +150,8 @@ disableMetrics(char *clist) {
 				global.pcie = false;
 			else if (strcmp(s, "violations") == 0)
 				global.violations = false;
+			else if (strcmp(s, "memory") == 0)
+				global.memory = false;
 			else {
 				PROM_WARN("Unknown metrics '%s'", s);
 				res++;
@@ -183,6 +188,8 @@ collect(prom_collector_t *self) {
 		getPCIe(sb, compact, global.devs, global.devList);
 	if (global.violations)
 		getViolations(sb, compact, global.devs, global.devList);
+	if (global.memory)
+		getMemory(sb, compact, global.devs, global.devList);
 	if (sb != NULL && !compact)
 		psb_add_char(sb, '\n');
 	return NULL;
