@@ -60,6 +60,7 @@ getTemperatures(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 	uint i, value;
 	char buf[MBUF_SZ];
 	bool free_sb = sb == NULL;
+	nvmlFieldValue_t fval;
 
 	if (devs == 0)
 		return false;
@@ -86,19 +87,22 @@ getTemperatures(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 			PROM_DEBUG("gpu.hasTemperature = -1", "");
 			gpu->hasTemperature = -1;
 		}
-		/* there seems to be no API to get memory temperature
-		res = nvmlDeviceGetTemperature(gpu->dev, 2, &value);
-		if (NVML_SUCCESS == res) {
-			snprintf(buf, sizeof(buf),
-			NVMEXM_TEMPERATURE_N "{gpu=\"%d\",device=\"mem\",uuid=\"%s\"} %u\n",
-			i, gpu->uuid, value);
-			psb_add_str(sb, buf);
-			gpu->hasTemperatureMem = 1;
-		} else if (NOT_AVAIL(res)) {
-			PROM_DEBUG("gpu.hasTemperatureMem = -1", "");
-			gpu->hasTemperature = -1;
+		/* there seems to be no API to get memory temperature, except generic */
+		if (gpu->hasTemperature != -1) {
+			memset(&fval, 0, sizeof(fval));	// make sure unused|scopeId == 0
+			fval.fieldId = NVML_FI_DEV_MEMORY_TEMP;
+			res = nvmlDeviceGetFieldValues(gpu->dev, 1, &fval);
+			if (NVML_SUCCESS == res && fval.value.uiVal != 0) {
+				snprintf(buf, sizeof(buf), NVMEXM_TEMPERATURE_N
+					"{gpu=\"%d\",device=\"mem\",uuid=\"%s\"} %u\n",
+					i, gpu->uuid, value);
+				psb_add_str(sb, buf);
+				gpu->hasTemperatureMem = 1;
+			} else if (NOT_AVAIL(res)) {
+				PROM_DEBUG("gpu.hasTemperatureMem = -1", "");
+				gpu->hasTemperature = -1;
+			}
 		}
-		*/
 		if (gpu->temperatures == NULL)
 			setStaticValues(gpu);
 		psb_add_str(sb, gpu->temperatures);

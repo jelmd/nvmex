@@ -10,7 +10,7 @@
  */
 
 /**
-	gcc -m64 -II/usr/local/cuda-10.1/targets/x86_64-linux/include scratch.c \
+	gcc -m64 -I /usr/local/cuda-10.1/targets/x86_64-linux/include scratch.c \
 		-L /usr/local/cuda-10.1/targets/x86_64-linux/lib/stubs -lnvidia-ml
  */
 #include <stdio.h>
@@ -27,6 +27,7 @@ main(int argc, char *argv[]) {
 	nvmlReturn_t res;
 	uint devs, i, k, l, clockMHz;
 	nvmlDevice_t dev;
+	nvmlFieldValue_t fval;
 
 	res = nvmlInit_v2();
 	if (res != NVML_SUCCESS) {
@@ -53,6 +54,12 @@ main(int argc, char *argv[]) {
 			}
 			fprintf(stdout, "Clock %u of %u: %u MHz\n", k, i, clockMHz);
 		}
+		}
+		fval.fieldId = NVML_FI_DEV_MEMORY_TEMP;
+		//fval.scopeId = 0;
+		res = nvmlDeviceGetFieldValues(dev, 1, &fval);
+		if (NVML_SUCCESS == res) {
+			fprintf(stdout, "NVML_FI_DEV_MEMORY_TEMP: %u %u\n", fval.valueType, fval.value.uiVal);
 		}
 	}
 	res = nvmlShutdown();

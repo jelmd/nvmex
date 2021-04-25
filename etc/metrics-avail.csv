@@ -58,7 +58,7 @@
 130, #DEV_SUPPORTED_CLOCKS, gauge, Supported clocks for the device.
 
 # Temperature,,
-140, DEV_MEMORY_TEMP, gauge, Memory temperature (in C).	# no API - TBD
+140, #DEV_MEMORY_TEMP, gauge, Memory temperature (in C).
 150, #DEV_GPU_TEMP,    gauge, GPU temperature (in C).
 151, #DEV_MEM_MAX_OP_TEMP, gauge, Maximum operating temperature for the memory of this GPU.
 152, #DEV_GPU_MAX_OP_TEMP, gauge, Maximum operating temperature for this GPU.
