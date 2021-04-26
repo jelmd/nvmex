@@ -115,44 +115,44 @@
 251, #DEV_FB_FREE, gauge, Framebuffer memory free (in MiB).
 252, #DEV_FB_USED, gauge, Framebuffer memory used (in MiB).
 
-300, DEV_ECC_CURRENT, gauge, Current ECC mode for the device.
-301, DEV_ECC_PENDING, gauge, Pending ECC mode for the device.
+300, #DEV_ECC_CURRENT, gauge, Current ECC mode for the device.
+301, #DEV_ECC_PENDING, gauge, Pending ECC mode for the device.
 
 # ECC,,
-310, DEV_ECC_SBE_VOL_TOTAL, counter, Total number of single-bit volatile ECC errors.
-311, DEV_ECC_DBE_VOL_TOTAL, counter, Total number of double-bit volatile ECC errors.
-312, DEV_ECC_SBE_AGG_TOTAL, counter, Total number of single-bit persistent ECC errors.
-313, DEV_ECC_DBE_AGG_TOTAL, counter, Total number of double-bit persistent ECC errors.
+310, #DEV_ECC_SBE_VOL_TOTAL, counter, Total number of single-bit volatile ECC errors.
+311, #DEV_ECC_DBE_VOL_TOTAL, counter, Total number of double-bit volatile ECC errors.
+312, #DEV_ECC_SBE_AGG_TOTAL, counter, Total number of single-bit persistent ECC errors.
+313, #DEV_ECC_DBE_AGG_TOTAL, counter, Total number of double-bit persistent ECC errors.
 
-314, DEV_ECC_SBE_VOL_L1, gauge, L1 cache single bit volatile ECC errors.
-315, DEV_ECC_DBE_VOL_L1, gauge, L1 cache double bit volatile ECC errors.
-316, DEV_ECC_SBE_VOL_L2, gauge, L2 cache single bit volatile ECC errors.
-317, DEV_ECC_DBE_VOL_L2, gauge, L2 cache double bit volatile ECC errors.
-318, DEV_ECC_SBE_VOL_DEV, gauge, Device memory single bit volatile ECC errors.
-319, DEV_ECC_DBE_VOL_DEV, gauge, Device memory double bit volatile ECC errors.
-320, DEV_ECC_SBE_VOL_REG, gauge, Register file single bit volatile ECC errors.
-321, DEV_ECC_DBE_VOL_REG, gauge, Register file double bit volatile ECC errors.
-322, DEV_ECC_SBE_VOL_TEX, gauge, Texture memory single bit volatile ECC errors.
-323, DEV_ECC_DBE_VOL_TEX, gauge, Texture memory double bit volatile ECC errors.
-324, DEV_ECC_SBE_AGG_L1, counter, L1 cache single bit aggregate (persistent) ECC errors.
-325, DEV_ECC_DBE_AGG_L1, counter, L1 cache double bit aggregate (persistent) ECC errors.
-326, DEV_ECC_SBE_AGG_L2, counter, L2 cache single bit aggregate (persistent) ECC errors.
-327, DEV_ECC_DBE_AGG_L2, counter, L2 cache double bit aggregate (persistent) ECC errors.
-328, DEV_ECC_SBE_AGG_DEV, counter, Device memory single bit aggregate (persistent) ECC errors.
-329, DEV_ECC_DBE_AGG_DEV, counter, Device memory double bit aggregate (persistent) ECC errors.
-330, DEV_ECC_SBE_AGG_REG, counter, Register File single bit aggregate (persistent) ECC errors.
-331, DEV_ECC_DBE_AGG_REG, counter, Register File double bit aggregate (persistent) ECC errors.
-332, DEV_ECC_SBE_AGG_TEX, counter, Texture memory single bit aggregate (persistent) ECC errors.
-333, DEV_ECC_DBE_AGG_TEX, counter, Texture memory double bit aggregate (persistent) ECC errors.
+314, #DEV_ECC_SBE_VOL_L1, gauge, L1 cache single bit volatile ECC errors.
+315, #DEV_ECC_DBE_VOL_L1, gauge, L1 cache double bit volatile ECC errors.
+316, #DEV_ECC_SBE_VOL_L2, gauge, L2 cache single bit volatile ECC errors.
+317, #DEV_ECC_DBE_VOL_L2, gauge, L2 cache double bit volatile ECC errors.
+318, #DEV_ECC_SBE_VOL_DEV, gauge, Device memory single bit volatile ECC errors.
+319, #DEV_ECC_DBE_VOL_DEV, gauge, Device memory double bit volatile ECC errors.
+320, #DEV_ECC_SBE_VOL_REG, gauge, Register file single bit volatile ECC errors.
+321, #DEV_ECC_DBE_VOL_REG, gauge, Register file double bit volatile ECC errors.
+322, #DEV_ECC_SBE_VOL_TEX, gauge, Texture memory single bit volatile ECC errors.
+323, #DEV_ECC_DBE_VOL_TEX, gauge, Texture memory double bit volatile ECC errors.
+324, #DEV_ECC_SBE_AGG_L1, counter, L1 cache single bit aggregate (persistent) ECC errors.
+325, #DEV_ECC_DBE_AGG_L1, counter, L1 cache double bit aggregate (persistent) ECC errors.
+326, #DEV_ECC_SBE_AGG_L2, counter, L2 cache single bit aggregate (persistent) ECC errors.
+327, #DEV_ECC_DBE_AGG_L2, counter, L2 cache double bit aggregate (persistent) ECC errors.
+328, #DEV_ECC_SBE_AGG_DEV, counter, Device memory single bit aggregate (persistent) ECC errors.
+329, #DEV_ECC_DBE_AGG_DEV, counter, Device memory double bit aggregate (persistent) ECC errors.
+330, #DEV_ECC_SBE_AGG_REG, counter, Register File single bit aggregate (persistent) ECC errors.
+331, #DEV_ECC_DBE_AGG_REG, counter, Register File double bit aggregate (persistent) ECC errors.
+332, #DEV_ECC_SBE_AGG_TEX, counter, Texture memory single bit aggregate (persistent) ECC errors.
+333, #DEV_ECC_DBE_AGG_TEX, counter, Texture memory double bit aggregate (persistent) ECC errors.
 
 # Retired pages,,
-390, DEV_RETIRED_SBE,     counter, Total number of retired pages due to single-bit errors.
-391, DEV_RETIRED_DBE,     counter, Total number of retired pages due to double-bit errors.
-392, DEV_RETIRED_PENDING, counter, Total number of pages pending retirement.
+390, #DEV_RETIRED_SBE,     counter, Total number of retired pages due to single-bit errors.
+391, #DEV_RETIRED_DBE,     counter, Total number of retired pages due to double-bit errors.
+392, #DEV_RETIRED_PENDING, counter, Total number of pages pending retirement.
 
-393, DEV_UNCORRECTABLE_REMAPPED_ROWS, gauge, Number of remapped rows for uncorrectable errors.
-394, DEV_CORRECTABLE_REMAPPED_ROWS, gauge, Number of remapped rows for correctable errors.
-395, DEV_ROW_REMAP_FAILURE, gauge, Whether remapping of rows has failed.
+393, #DEV_UNCORRECTABLE_REMAPPED_ROWS, gauge, Number of remapped rows for uncorrectable errors.
+394, #DEV_CORRECTABLE_REMAPPED_ROWS, gauge, Number of remapped rows for correctable errors.
+395, #DEV_ROW_REMAP_FAILURE, gauge, Whether remapping of rows has failed.
 
 # NVLink,,
 409, DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL, counter, Total number of NVLink flow-control CRC errors.

@@ -17,8 +17,9 @@ any zone, container, or pod which has access to 1+ GPU.
 
 ## Requirements
 
-Beside Nvidia's libnividia-ml.so.1 *nvmex* requires [libprom](https://github.com/jelmd/libprom) and [libmicrohttpd](https://github.com/Karlson2k/libmicrohttpd).
+Beside Nvidia's libnividia-ml.so.1 (usually provided by the libnvidia-compute-XYZ package) *nvmex* requires [libprom](https://github.com/jelmd/libprom) and [libmicrohttpd](https://github.com/Karlson2k/libmicrohttpd).
 
+The **nvml.h** (usually provided by the cuda-nvml-dev-U-V package) used to compile this utility must match the **libnividia-ml.so.1** library used on your machines and this in turn the version of the nvdia kernel module in use. The management library is usually backward compatible, so compiling against an older version and using it on machines with more recent versions of the NVML should work (but you may miss some metrics).
 
 ## Repo
 

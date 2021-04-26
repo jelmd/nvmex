@@ -57,6 +57,9 @@ typedef struct gpu_st {
 	char	hasDecoderUtil;
 	char	hasPCIeUtil;
 	char	hasPCIeReplay;
+	char	hasECC;
+	char	hasRetiredPages;
+	char	hasRemappedRows;
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -127,6 +130,22 @@ typedef struct gpu_st {
 #define NVMEXM_MEM_D "Device memory in bytes."
 #define NVMEXM_MEM_T "gauge"
 #define NVMEXM_MEM_N "nvmex_memory_bytes"
+
+#define NVMEXM_ECC_MODE_D "ECC mode of the device (0 .. disabled, 1.. enabled)."
+#define NVMEXM_ECC_MODE_T "gauge"
+#define NVMEXM_ECC_MODE_N "nvmex_ecc_mode"
+
+#define NVMEXM_ECC_ERR_D "ECC single and double bit errors (SBE and DBE) grouped by persistent and volatile (i.e. since last driver load/reboot) counter as well as where it occured (Ln .. Ln cache, GPU .. device memory, REG .. register file, TEX .. texture memory, CBU .. convergence barrier unit, ALL .. aggregation of all locations mentioned before)."
+#define NVMEXM_ECC_ERR_T "gauge"
+#define NVMEXM_ECC_ERR_N "nvmex_ecc_errors"
+
+#define NVMEXM_ECC_PAGE_D "Number of retired memory pages because of multiple single bit errors (sbe), or double bit errors (dbe), or whether there are any pages are pending retirement (pending), i.e. need reboot to fully retire."
+#define NVMEXM_ECC_PAGE_T "counter"
+#define NVMEXM_ECC_PAGE_N "nvmex_ecc_retired_pages"
+
+#define NVMEXM_ECC_ROW_D "Number of remapped rows ('pending','failure': 0 .. no, 1 .. yes)."
+#define NVMEXM_ECC_ROW_T "counter"
+#define NVMEXM_ECC_ROW_N "nvmex_ecc_remapped_rows"
 
 /*
 #define NVMEXM_XXX_D "short description."
