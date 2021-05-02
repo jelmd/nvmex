@@ -69,6 +69,8 @@ typedef struct gpu_st {
 	char	nvLinkSkipTxRx[NVML_NVLINK_MAX_LINKS + 1];
 	char	nvLinkTxRxError;
 #endif
+	char	hasEncStats;
+	char	hasEncSessions;
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -171,6 +173,26 @@ typedef struct gpu_st {
 #define NVMEXM_NVLINK_TRAFFIC_D "NVLink traffic counter in bytes."
 #define NVMEXM_NVLINK_TRAFFIC_T "counter"
 #define NVMEXM_NVLINK_TRAFFIC_N "nvmex_nvlink_traffic_bytes"
+
+#define NVMEXM_ENCSTAT_SESS_D "Number of active encoder sessions."
+#define NVMEXM_ENCSTAT_SESS_T "gauge"
+#define NVMEXM_ENCSTAT_SESS_N "nvmex_enc_stat_sessions"
+
+#define NVMEXM_ENCSTAT_FPS_D "Trailing average encode frames per second of all active sessions."
+#define NVMEXM_ENCSTAT_FPS_T "gauge"
+#define NVMEXM_ENCSTAT_FPS_N "nvmex_enc_stat_fps"
+
+#define NVMEXM_ENCSTAT_LAT_D "Average encode latency in microseconds."
+#define NVMEXM_ENCSTAT_LAT_T "gauge"
+#define NVMEXM_ENCSTAT_LAT_N "nvmex_enc_stat_latency_us"
+
+#define NVMEXM_ENCSESS_FPS_D "Moving average encode frames per second."
+#define NVMEXM_ENCSESS_FPS_T "gauge"
+#define NVMEXM_ENCSESS_FPS_N "nvmex_enc_session_fps"
+
+#define NVMEXM_ENCSESS_LAT_D "Moving average encode latency in microseconds."
+#define NVMEXM_ENCSESS_LAT_T "gauge"
+#define NVMEXM_ENCSESS_LAT_N "nvmex_enc_session_latency_us"
 
 /*
 #define NVMEXM_XXX_D "short description."

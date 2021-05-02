@@ -93,7 +93,7 @@ LIBSRCS= inspect.c
 LIBOBJS= $(LIBSRCS:%.c=%.o)
 
 PROGSRCS = main.c inspect.c clocks.c bar1memory.c temperature.c power.c fan.c \
-	util.c pcie.c violations.c memory.c ecc.c nvlink.c
+	util.c pcie.c violations.c memory.c ecc.c nvlink.c enc.c
 PROGOBJS = $(PROGSRCS:%.c=%.o) 
 
 all:	$(PROGS)

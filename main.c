@@ -36,6 +36,7 @@
 #include "memory.h"
 #include "ecc.h"
 #include "nvlink.h"
+#include "enc.h"
 
 typedef enum {
 	SMF_EXIT_OK	= 0,
@@ -82,6 +83,8 @@ static struct {
 	bool memory;
 	bool ecc;
 	bool nvlink;
+	bool encStats;
+	bool encSessions;
 	gpu_t *devList;
 	unsigned int devs;
 	prom_counter_t *req_counter;
@@ -105,6 +108,8 @@ static struct {
 	.memory = true,
 	.ecc = true,
 	.nvlink = true,
+	.encStats = true,
+	.encSessions = true,
 	.devList = NULL,
 	.devs = 0,
 	.req_counter = NULL,
@@ -162,6 +167,10 @@ disableMetrics(char *clist) {
 				global.memory = false;
 			else if (strcmp(s, "nvlinks") == 0)
 				global.nvlink = false;
+			else if (strcmp(s, "encstats") == 0)
+				global.encStats = false;
+			else if (strcmp(s, "encsessions") == 0)
+				global.encSessions = false;
 			else {
 				PROM_WARN("Unknown metrics '%s'", s);
 				res++;
@@ -204,6 +213,8 @@ collect(prom_collector_t *self) {
 		getECC(sb, compact, global.devs, global.devList);
 	if (global.nvlink)
 		getNvLink(sb, compact, global.devs, global.devList);
+	if (global.encStats || global.encSessions)
+		getEnc(sb, compact, global.devs, global.devList, global.encSessions);
 	if (sb != NULL && !compact)
 		psb_add_char(sb, '\n');
 	return NULL;

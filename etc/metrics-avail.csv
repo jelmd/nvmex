@@ -2,6 +2,7 @@
 # If line starts with a '#' it is considered a comment,,
 # ID, DCGM FIELD, Prometheus metric type, help message
 # If the DCGM FIELD starts with a '#', it is not enabled by default.
+# See also gpu-monitoring-tools/bindings/go/dcgm/dcgm_fields.h
 
 # Generic Info
 1, DRIVER_VERSION, gauge, Driver Version.
@@ -169,7 +170,8 @@
 504, DEV_VGPU_UTILIZATIONS, gauge, Utilization values for vGPUs running on the device.
 505, DEV_VGPU_PER_PROCESS_UTILIZATION, gauge, Utilization values for processes running within vGPU VMs using the device.
 
-506, DEV_ENC_STATS, gauge, Current encoder statistics for a given device.
+506, #DEV_ENC_STATS, gauge, Current encoder statistics for a given device.
+
 507, DEV_FBC_STATS, gauge, Statistics of current active frame buffer capture sessions on a given device.
 508, DEV_FBC_SESSIONS_INFO, gauge, Information about active frame buffer capture sessions on a target device.
 
