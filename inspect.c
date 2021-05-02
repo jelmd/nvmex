@@ -291,6 +291,8 @@ cleanup(uint devs, gpu_t *devList[]) {
 		free((*devList)[i].temperatures);
 		free((*devList)[i].powerlimits);
 		free((*devList)[i].pcieLinkInfo);
+		free((*devList)[i].nvLinkBW);
+		free((*devList)[i].nvLinkCount);
 		(*devList)[i].dev = NULL;
 	}
 	free(*devList);

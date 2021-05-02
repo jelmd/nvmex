@@ -155,12 +155,12 @@
 395, #DEV_ROW_REMAP_FAILURE, gauge, Whether remapping of rows has failed.
 
 # NVLink,,
-409, DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL, counter, Total number of NVLink flow-control CRC errors.
-419, DEV_NVLINK_CRC_DATA_ERROR_COUNT_TOTAL, counter, Total number of NVLink data CRC errors.
-429, DEV_NVLINK_REPLAY_ERROR_COUNT_TOTAL,   counter, Total number of NVLink retries.
-439, DEV_NVLINK_RECOVERY_ERROR_COUNT_TOTAL, counter, Total number of NVLink recovery errors.
-440, DEV_NVLINK_BANDWIDTH_L0,               counter, The number of bytes of active NVLink rx or tx data including both header and payload.
-449, DEV_NVLINK_BANDWIDTH_TOTAL,            counter, Total number of NVLink bandwidth counters for all lanes.
+409, #DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL, counter, Total number of NVLink flow-control CRC errors.
+419, #DEV_NVLINK_CRC_DATA_ERROR_COUNT_TOTAL, counter, Total number of NVLink data CRC errors.
+429, #DEV_NVLINK_REPLAY_ERROR_COUNT_TOTAL,   counter, Total number of NVLink retries.
+439, #DEV_NVLINK_RECOVERY_ERROR_COUNT_TOTAL, counter, Total number of NVLink recovery errors.
+440, #DEV_NVLINK_BANDWIDTH_L0,               counter, The number of bytes of active NVLink rx or tx data including both header and payload.
+449, #DEV_NVLINK_BANDWIDTH_TOTAL,            counter, Total number of NVLink bandwidth counters for all lanes.
 
 500, DEV_VIRTUAL_MODE, gauge, Virtualization Mode corresponding to the GPU. One of DCGM_GPU_VIRTUALIZATION_MODE_* constants.
 501, DEV_SUPPORTED_TYPE_INFO, gauge, Includes Count and Static info of vGPU types supported on a device.
@@ -168,6 +168,7 @@
 503, DEV_VGPU_INSTANCE_IDS, gauge, Includes Count and currently Active vGPU Instances on a device.
 504, DEV_VGPU_UTILIZATIONS, gauge, Utilization values for vGPUs running on the device.
 505, DEV_VGPU_PER_PROCESS_UTILIZATION, gauge, Utilization values for processes running within vGPU VMs using the device.
+
 506, DEV_ENC_STATS, gauge, Current encoder statistics for a given device.
 507, DEV_FBC_STATS, gauge, Statistics of current active frame buffer capture sessions on a given device.
 508, DEV_FBC_SESSIONS_INFO, gauge, Information about active frame buffer capture sessions on a target device.
@@ -352,4 +353,3 @@
 1010, PROF_PCIE_RX_BYTES,      counter, The number of bytes of active pcie rx data including both header and payload.
 1011, PROF_NVLINK_TX_BYTES,   counter, The number of bytes of active NvLink tx data including both header and payload.
 1012, PROF_NVLINK_RX_BYTES,   counter. The number of bytes of active NvLink rx data including both header and payload.
-

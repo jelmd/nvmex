@@ -42,6 +42,8 @@ typedef struct gpu_st {
 	char	*temperatures;	//<! static temperature values
 	char	*powerlimits;	//<! static power limits
 	char	*pcieLinkInfo;	//<! static PCIe infos
+	char	*nvLinkBW;		//<! static NvLinkBandwith
+	char	*nvLinkCount;	//<! static number of NvLinks
 	uint	idx;			//!< NVML index of the GPU. May change on reboot.
 	int		hasViolation;	//!< Bitmask about supported violation durations
 	char	hasClockThrottle;
@@ -60,6 +62,13 @@ typedef struct gpu_st {
 	char	hasECC;
 	char	hasRetiredPages;
 	char	hasRemappedRows;
+	char	hasNvLinks;
+	char	nvLinkFieldError;
+#ifndef NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
+	char	nvLinks;		// sum up this number of nvLinks wrt. tx & rx
+	char	nvLinkSkipTxRx[NVML_NVLINK_MAX_LINKS + 1];
+	char	nvLinkTxRxError;
+#endif
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -146,6 +155,22 @@ typedef struct gpu_st {
 #define NVMEXM_ECC_ROW_D "Number of remapped rows ('pending','failure': 0 .. no, 1 .. yes)."
 #define NVMEXM_ECC_ROW_T "counter"
 #define NVMEXM_ECC_ROW_N "nvmex_ecc_remapped_rows"
+
+#define NVMEXM_NVLINK_ERR_D "NVLink related errors and retries."
+#define NVMEXM_NVLINK_ERR_T "counter"
+#define NVMEXM_NVLINK_ERR_N "nvmex_nvlink_errors"
+
+#define NVMEXM_NVLINK_BW_D "Common NVLink bandwidth in MB/s for active links."
+#define NVMEXM_NVLINK_BW_T "counter"
+#define NVMEXM_NVLINK_BW_N "nvmex_nvlink_bandwidth_MBps"
+
+#define NVMEXM_NVLINK_COUNT_D "Number of NVLinks present on the device."
+#define NVMEXM_NVLINK_COUNT_T "counter"
+#define NVMEXM_NVLINK_COUNT_N "nvmex_nvlink_links"
+
+#define NVMEXM_NVLINK_TRAFFIC_D "NVLink traffic counter in bytes."
+#define NVMEXM_NVLINK_TRAFFIC_T "counter"
+#define NVMEXM_NVLINK_TRAFFIC_N "nvmex_nvlink_traffic_bytes"
 
 /*
 #define NVMEXM_XXX_D "short description."
