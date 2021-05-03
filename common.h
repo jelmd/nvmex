@@ -71,6 +71,8 @@ typedef struct gpu_st {
 #endif
 	char	hasEncStats;
 	char	hasEncSessions;
+	char	hasFbcStats;
+	char	hasFbcSessions;
 } gpu_t;
 
 #define MBUF_SZ 256
@@ -193,6 +195,26 @@ typedef struct gpu_st {
 #define NVMEXM_ENCSESS_LAT_D "Moving average encode latency in microseconds."
 #define NVMEXM_ENCSESS_LAT_T "gauge"
 #define NVMEXM_ENCSESS_LAT_N "nvmex_enc_session_latency_us"
+
+#define NVMEXM_FBCSTAT_SESS_D "Total no of frame capture sessions."
+#define NVMEXM_FBCSTAT_SESS_T "gauge"
+#define NVMEXM_FBCSTAT_SESS_N "nvmex_fbc_stat_sessions"
+
+#define NVMEXM_FBCSTAT_FPS_D "Moving average new frames captured per second."
+#define NVMEXM_FBCSTAT_FPS_T "gauge"
+#define NVMEXM_FBCSTAT_FPS_N "nvmex_fbc_stat_fps"
+
+#define NVMEXM_FBCSTAT_LAT_D "Moving average new frame capture latency in microseconds."
+#define NVMEXM_FBCSTAT_LAT_T "gauge"
+#define NVMEXM_FBCSTAT_LAT_N "nvmex_fbc_stat_latency_us"
+
+#define NVMEXM_FBCSESS_FPS_D "Moving average new frames captured per second."
+#define NVMEXM_FBCSESS_FPS_T "gauge"
+#define NVMEXM_FBCSESS_FPS_N "nvmex_fbc_session_fps"
+
+#define NVMEXM_FBCSESS_LAT_D "Moving average new frame capture latency in microseconds."
+#define NVMEXM_FBCSESS_LAT_T "gauge"
+#define NVMEXM_FBCSESS_LAT_N "nvmex_fbc_session_latency_us"
 
 /*
 #define NVMEXM_XXX_D "short description."

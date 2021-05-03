@@ -172,8 +172,8 @@
 
 506, #DEV_ENC_STATS, gauge, Current encoder statistics for a given device.
 
-507, DEV_FBC_STATS, gauge, Statistics of current active frame buffer capture sessions on a given device.
-508, DEV_FBC_SESSIONS_INFO, gauge, Information about active frame buffer capture sessions on a target device.
+507, #DEV_FBC_STATS, gauge, Statistics of current active frame buffer capture sessions on a given device.
+508, #DEV_FBC_SESSIONS_INFO, gauge, Information about active frame buffer capture sessions on a target device.
 
 # vGPU
 520, DEV_VGPU_VM_ID, gauge, VM ID of the vGPU instance.
