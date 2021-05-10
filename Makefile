@@ -9,8 +9,9 @@
 
 VERSION = "0.0.1"
 PREFIX ?= /usr
-BINDIR ?= bin
+BINDIR ?= sbin
 MANDIR ?= share/man/man1
+# you probably want to append something like '/64', '/x86_64', '/amd64'
 LIBDIR ?= lib
 
 # via package cuda-nvml-dev-10-1
