@@ -12,6 +12,9 @@
 #ifndef NVMEX_COMMON_H
 #define NVMEX_COMMON_H
 
+#define NVMEX_VERSION "1.0.0"
+#define NVMEX_AUTHOR "Jens Elkner (jel+nvmex@cs.uni-magdeburg.de)"
+
 #define nverror(x)  nvmlErrorString(x)  
 #ifndef uint
 #define uint unsigned int

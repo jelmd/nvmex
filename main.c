@@ -64,6 +64,7 @@ static struct option options[] = {
 	{"port",				required_argument,	NULL, 'p'},
 	{"source",				required_argument,	NULL, 's'},
 	{"verbosity",			required_argument,	NULL, 'v'},
+	{"version",				no_argument,		NULL, 'V'},
 	{0, 0, 0, 0}
 };
 
@@ -545,6 +546,10 @@ main(int argc, char **argv) {
 		if (c == -1)
 			break;
 		switch (c) {
+			case 'V':
+				fputs("nvmex " NVMEX_VERSION
+					"\n(C) 2021 " NVMEX_AUTHOR "\n", stdout);
+				return 0;
 			case 'L':
 				global.promflags &= ~PROM_SCRAPETIME;
 				break;
