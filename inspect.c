@@ -16,6 +16,9 @@
 
 /* nvmlInit_v2() already called */
 static uint started = 0;
+static char *versionHR = NULL;
+static char *versionProm = NULL;
+static char *gpuInfoHR = NULL;
 
 uint
 start(void) {
@@ -45,73 +48,109 @@ stop(void) {
 	return 1;
 }
 
-uint
-listDevices(psb_t *sb) {
+char *
+getDevInfos(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 	nvmlReturn_t res;
-	uint devs, i;
-	char buf[MBUF_SZ];
+	gpu_t *gpu;
+	uint i;
+	char buf[MBUF_SZ * 4], *p;
 	bool free_sb = sb == NULL;
+	psb_t *sbi = NULL;
 
-	// Does NOT count devices NVML has no permission to talk to.
-	res = nvmlDeviceGetCount(&devs);
-	if (NVML_SUCCESS != res) { 
-		PROM_WARN("Failed to get device count: %s", nverror(res));
-		return 0;
-	}
-    PROM_DEBUG("Found %u device%s", devs, devs != 1 ? "s" : "");
 	if (devs == 0)
-		return 0;
+		return NULL;
 
-	if (free_sb)
+	PROM_DEBUG("getDevInfos", "");
+	if (free_sb) {
 		sb = psb_new();
+		if (sb == NULL)
+			return NULL;
+	}
+	if (gpuInfoHR == NULL) {
+		sbi = psb_new();
+		if (sbi == NULL)
+			return NULL;
+	}
 
-	psb_add_str(sb, "Devices found:\n");    
+	if (!compact)
+		addPromInfo(NVMEXM_GPU);
+
 	for (i = 0; i < devs; i++) {
-		nvmlDevice_t dev;
 		char name[NVML_DEVICE_NAME_BUFFER_SIZE];
 		nvmlPciInfo_t pci;
-		nvmlComputeMode_t compute_mode;
 
-		res = nvmlDeviceGetHandleByIndex(i, &dev);
-		if (NVML_SUCCESS != res) { 
-			PROM_WARN("Failed to get device handle %u: %s\n", i, nverror(res));
+		gpu = &(devList[i]);
+		if (gpu->dev == NULL)
+			continue;
+		if (gpu->info != NULL) {
+			psb_add_str(sb, gpu->info);
 			continue;
 		}
+		p = buf;
+		buf[0] = '\0';
+
 		// see also  nvmlDeviceGetArchitecture(dev, &arch): maps arch to string
-		res = nvmlDeviceGetName(dev, name, NVML_DEVICE_NAME_BUFFER_SIZE);
+		res = nvmlDeviceGetName(gpu->dev, name, NVML_DEVICE_NAME_BUFFER_SIZE);
 		if (NVML_SUCCESS != res) { 
-            printf("Failed to get name of device %u: %s\n", i,
-				nverror(res));
-            continue;
-        }
-		res = nvmlDeviceGetPciInfo(dev, &pci);
-		if (NVML_SUCCESS != res) { 
-			PROM_WARN("Failed to get pci info for device %u: %s\n", i,
-				nverror(res));
-			continue;
+			PROM_WARN("Failed to get name of device %u: %s\n", i, nverror(res));
+			name[0] = '\0';
+        } else {
+			p += snprintf(buf, sizeof(buf),
+				NVMEXM_GPU_N "{gpu=\"%d\",name=\"%s\",uuid=\"%s\"} 1\n",
+				i, name, gpu->uuid);
 		}
-		res = nvmlDeviceGetComputeMode(dev, &compute_mode);
-		snprintf(buf, MBUF_SZ, "%u. %s [%s]   %sCUDA capable\n",
-			i, name, pci.busId, NVML_ERROR_NOT_SUPPORTED == res ? "not " : "");
+		res = nvmlDeviceGetPciInfo(gpu->dev, &pci);
+		if (NVML_SUCCESS != res) { 
+			PROM_WARN("Failed to get pciInfo of device %u: %s\n", i,
+				nverror(res));
+			pci.busId[0] = '\0';
+		} else {
+			p += snprintf(p, sizeof(buf) - (p - buf),
+				NVMEXM_GPU_N "{gpu=\"%d\",pci=\"%s\",uuid=\"%s\"} 1\n",
+				i, pci.busId, gpu->uuid);
+		}
 		psb_add_str(sb, buf);
+		gpu->info = strdup(buf);
+		if (sbi != NULL) {
+			nvmlComputeMode_t compute_mode;
+			res = nvmlDeviceGetComputeMode(gpu->dev, &compute_mode);
+			snprintf(buf, MBUF_SZ, "%u. %s [%s]   %sCUDA capable\n",
+				i, name, pci.busId, NVML_ERROR_NOT_SUPPORTED == res ?"not ":"");
+			psb_add_str(sbi, buf);
+		}
+	}
+	if (sbi != NULL) {
+		gpuInfoHR = psb_dump(sbi);
+		psb_destroy(sbi);
 	}
 	if (free_sb) {
-		fprintf(stderr, "\n%s", psb_str(sb));
+		fprintf(stdout, "\n%s", psb_str(sb));
 		psb_destroy(sb);
 	}
-	return devs;
+	return gpuInfoHR;
 }
 
 // System Queries 2.12
-uint
-getVersions(psb_t *sb) {
-	bool free_sb = sb == NULL;
+char *
+getVersions(psb_t *sbp, bool compact) {
 	nvmlReturn_t res;
-	int v;
+	int v, k, l;
 	char buf[MBUF_SZ];
+	psb_t *sbi = NULL, *sb = NULL;
 
-	if (free_sb)
-		sb = psb_new();
+	if (versionProm != NULL)
+		goto end;
+
+	sbi = psb_new();
+	sb = psb_new();
+	if (sbi == NULL || sb == NULL) {
+		psb_destroy(sbi);
+		psb_destroy(sb);
+		return NULL;
+	}
+
+	if (!compact)
+		addPromInfo(NVMEXM_VERS);
 
 	res = nvmlSystemGetCudaDriverVersion(&v);
 	if (NVML_SUCCESS != res) {
@@ -120,6 +159,10 @@ getVersions(psb_t *sb) {
 		int min = v%1000;
 		snprintf(buf, MBUF_SZ, "CUDA driver version: %d.%d.%d\n",
 			v/1000, min/10, min%10);
+		psb_add_str(sbi, buf);
+		snprintf(buf, MBUF_SZ, NVMEXM_VERS_N
+			"{name=\"CUDA driver\",value=\"%d.%d.%d\"} %d\n",
+			v/1000, min/10, min%10, v);
 		psb_add_str(sb, buf);
 	}
 
@@ -127,7 +170,20 @@ getVersions(psb_t *sb) {
 	if (NVML_SUCCESS != res) {
 		PROM_WARN("Failed to get System driver version: %s\n", nverror(res));
 	} else {
-		psb_add_str(sb, "Kernel module version: ");
+		psb_add_str(sbi, "Kernel module version: ");
+		psb_add_str(sbi, buf);
+		psb_add_char(sbi, '\n');
+		psb_add_str(sb, NVMEXM_VERS_N "{name=\"kernel module\",value=\"");
+		psb_add_str(sb, buf);
+		psb_add_str(sb, "\"} ");
+		l = -1;
+		for (k = strlen(buf) -1; k != 0; k--)
+			if (buf[k] == '.') {
+				buf[k] = '0';
+				l = k;
+			}
+		if (l != -1)
+			buf[l] = '.';
 		psb_add_str(sb, buf);
 		psb_add_char(sb, '\n');
 	}
@@ -136,22 +192,41 @@ getVersions(psb_t *sb) {
 	if (NVML_SUCCESS != res) {
 		PROM_WARN("Failed to get NVML version: %s\n", nverror(res));
 	} else {
-		psb_add_str(sb, "NVML version: ");
+		psb_add_str(sbi, "NVML version: ");
+		psb_add_str(sbi, buf);
+		psb_add_char(sbi, '\n');
+		psb_add_str(sb, NVMEXM_VERS_N "{name=\"NVML\",value=\"");
+		psb_add_str(sb, buf);
+		psb_add_str(sb, "\"} ");
+		l = -1;
+		for (k = strlen(buf) -1; k != 0; k--)
+			if (buf[k] == '.') {
+				buf[k] = '0';
+				l = k;
+			}
+		if (l != -1)
+			buf[l] = '.';
 		psb_add_str(sb, buf);
 		psb_add_char(sb, '\n');
 	}
-	//res = nvmlSystemGetProcessName (pid, buf, MBUF_SZ) 	// maps pid to name
 
-	if (free_sb) {
-		fprintf(stderr, "\n%s", psb_str(sb));
-		psb_destroy(sb);
+	versionHR = psb_dump(sbi);
+	psb_destroy(sbi);
+	versionProm = psb_dump(sb);
+	psb_destroy(sb);
+
+end:
+	if (sbp == NULL) {
+		fprintf(stdout, "\n%s", versionProm);
+	} else {
+		psb_add_str(sbp, versionProm);
 	}
-	return 0;
+	return versionHR;
 }
 
 // Unit Queries 2.13
 uint
-getDevInfos(psb_t *sb) {
+getUnitInfos(psb_t *sb) {
 	bool free_sb = sb == NULL;
 	nvmlReturn_t res;
 	//char buf[MBUF_SZ];
@@ -162,9 +237,9 @@ getDevInfos(psb_t *sb) {
 		PROM_WARN("Failed to get unit count: %s", nverror(res));
 		return 0;
 	}
-	PROM_DEBUG("Found %d units.", units);
 	if (units == 0)
 		return 0;
+	PROM_WARN("Found %d units - give me a call.", units);
 
 	/* Skip, 'til nvidia comes up with an explaination, what "units" and
 	   "S-class {systems|products}" are.
@@ -173,7 +248,7 @@ getDevInfos(psb_t *sb) {
 		sb = psb_new();
 
 	if (free_sb) {
-		fprintf(stderr, "\n%s", psb_str(sb));
+		//fprintf(stdout, "\n%s", psb_str(sb));
 		psb_destroy(sb);
 	}
 	return 0;
@@ -181,13 +256,11 @@ getDevInfos(psb_t *sb) {
 
 // Device Queries 2.14
 uint
-getDevices(psb_t *sb, gpu_t *gpuList[]) {
+getDevices(gpu_t *gpuList[]) {
 	nvmlReturn_t res;
 	uint devs, i, count = 0, k;
 	nvmlDevice_t *devList;
-	nvmlPciInfo_t pci;
 	char buf[MBUF_SZ];
-	bool free_sb = sb == NULL;
 	size_t bytes;
 
 	// Counts all devices, even those NVML has no permission to talk to.
@@ -230,8 +303,6 @@ getDevices(psb_t *sb, gpu_t *gpuList[]) {
 	memset(*gpuList, 0, bytes);
 	PROM_DEBUG("gpuList = %p", *gpuList);
 
-	if (free_sb)
-		sb = psb_new();
 	k = 0;
 	for (i = 0; i < devs; i++) {
 		if (devList[i] == NULL)
@@ -239,31 +310,18 @@ getDevices(psb_t *sb, gpu_t *gpuList[]) {
 		PROM_DEBUG("gpu[%u] = %p", i, &((*gpuList)[i]));
 		(*gpuList)[k].dev = devList[i];
 		(*gpuList)[k].idx = i;
-		res = nvmlDeviceGetPciInfo((*gpuList)[k].dev, &pci);
-		if (NVML_SUCCESS != res) {
-			PROM_WARN("Failed to get pci info dev %u: %s", i, nverror(res));
-		} else {
-			(*gpuList)[k].pciId = strdup(pci.busId);
-		}
 		res = nvmlDeviceGetUUID((*gpuList)[k].dev, buf, MBUF_SZ);
 		if (NVML_SUCCESS != res) {
 			PROM_WARN("Failed to get UUID dev %u: %s", i, nverror(res));
 		} else {
 			(*gpuList)[k].uuid = strdup(buf + 4);	// now it is a propper UUID
 		}
-		snprintf(buf, MBUF_SZ, "# gpu[%u]: %s  %s  %p\n", (*gpuList)[k].idx,
-			(*gpuList)[k].uuid, (*gpuList)[k].pciId, (void *)((*gpuList)[k]).dev);
-		psb_add_str(sb, buf);
 		k++;
 	}
 
 end:
 	free(devList);
 	devList = NULL;
-	if (free_sb) {
-		fprintf(stderr, "\n%s", psb_str(sb));
-		psb_destroy(sb);
-	}
 
 	return devs;
 }
@@ -272,12 +330,20 @@ uint
 cleanup(uint devs, gpu_t *devList[]) {
 	uint i, k;
 
+	free(versionHR);
+	versionHR = NULL;
+	free(versionProm);
+	versionProm = NULL;
+	free(gpuInfoHR);
+	gpuInfoHR = NULL;
+
 	if (*devList == NULL || devs == 0)
 		return 0;
 
 	for (i = 0; i < devs; i++) {
 		free((*devList)[i].uuid);
 		free((*devList)[i].pciId);
+		free((*devList)[i].info);
 		if ((*devList)[i].minMaxClock != NULL) {
 			for (k = 0; k < NVML_CLOCK_COUNT; k++)
 				free((*devList)[i].minMaxClock[k]);

@@ -73,6 +73,8 @@ static const char *shortUsage = {
 
 static struct {
 	uint promflags;
+	bool versionInfo;
+	bool gpuInfo;
 	bool clocks;
 	bool bar1mem;
 	bool temperature;
@@ -100,6 +102,8 @@ static struct {
 	char *logfile;
 } global = {
 	.promflags = PROM_PROCESS | PROM_SCRAPETIME | PROM_SCRAPETIME_ALL,
+	.versionInfo = true,
+	.gpuInfo = true,
 	.clocks = true,
 	.bar1mem = true,
 	.temperature = true,
@@ -150,11 +154,15 @@ disableMetrics(char *clist) {
 		if (s != e) {
 			if (strcmp(s, "process") == 0)
 				global.promflags &= ~PROM_PROCESS;
-			else if (strcmp(s, "clocks") == 0)
+			else if (strcmp(s, "version") == 0)
+				global.versionInfo = false;
+			else if (strcmp(s, "gpuinfo") == 0)
+				global.gpuInfo = false;
+			else if (strcmp(s, "clock") == 0)
 				global.clocks = false;
 			else if (strcmp(s, "bar1mem") == 0)
 				global.bar1mem = false;
-			else if (strcmp(s, "temperatures") == 0)
+			else if (strcmp(s, "temperature") == 0)
 				global.temperature = false;
 			else if (strcmp(s, "power") == 0)
 				global.power = false;
@@ -164,21 +172,21 @@ disableMetrics(char *clist) {
 				global.util = false;
 			else if (strcmp(s, "pcie") == 0)
 				global.pcie = false;
-			else if (strcmp(s, "violations") == 0)
+			else if (strcmp(s, "violation") == 0)
 				global.violations = false;
 			else if (strcmp(s, "memory") == 0)
 				global.memory = false;
 			else if (strcmp(s, "ecc") == 0)
-				global.memory = false;
-			else if (strcmp(s, "nvlinks") == 0)
+				global.ecc = false;
+			else if (strcmp(s, "nvlink") == 0)
 				global.nvlink = false;
-			else if (strcmp(s, "encstats") == 0)
+			else if (strcmp(s, "encstat") == 0)
 				global.encStats = false;
-			else if (strcmp(s, "encsessions") == 0)
+			else if (strcmp(s, "encsession") == 0)
 				global.encSessions = false;
-			else if (strcmp(s, "fbcstats") == 0)
+			else if (strcmp(s, "fbcstat") == 0)
 				global.fbcStats = false;
-			else if (strcmp(s, "fbcsessions") == 0)
+			else if (strcmp(s, "fbcsession") == 0)
 				global.fbcSessions = false;
 			else {
 				PROM_WARN("Unknown metrics '%s'", s);
@@ -200,6 +208,10 @@ static prom_map_t *
 collect(prom_collector_t *self) {
 	bool compact = global.promflags & PROM_COMPACT;
 	PROM_DEBUG("collector: %p  sb: %p", self, sb);
+	if (global.versionInfo)
+		getVersions(sb, compact);
+	if (global.gpuInfo)
+		getDevInfos(sb, compact, global.devs, global.devList);
 	if (global.clocks)
 		getClocks(sb, compact, global.devs, global.devList);
 	if (global.bar1mem)
@@ -521,6 +533,8 @@ main(int argc, char **argv) {
 	struct in_addr inaddr;
 	struct in6_addr in6addr;
 	struct in6_addr *addr = malloc(sizeof(struct in6_addr));
+	psb_t *buf;
+	char *str;
 
 	while (1) {
 		int c, optidx = 0;
@@ -627,15 +641,20 @@ main(int argc, char **argv) {
 		return status;
 	}
 	// init
-	listDevices(NULL);
-	getVersions(NULL);
-	getDevInfos(NULL);
-	global.devs = getDevices(NULL, &global.devList);
+	buf = psb_new(); // prevent that prom formatted output goes to stdout
+	str = getVersions(buf, global.promflags & PROM_COMPACT);
+	fprintf(stderr, "%s", str);
+	getUnitInfos(NULL);
+	global.devs = getDevices(&global.devList);
 	if (global.devs > 0) {
+		str = getDevInfos(buf, global.promflags & PROM_COMPACT,
+			global.devs, global.devList);
+		fprintf(stderr, "\nDevices:\n%s", str);
 		if (mode == 0) {
 			collect(NULL);
 			status = SMF_EXIT_OK;
 		} else if (setupProm() == 0) {
+			fputs("\n", stderr);
 			status = startHttpServer();
 			// let the parent exit
 			if (mode == 2) {
@@ -661,6 +680,7 @@ main(int argc, char **argv) {
 		}
 	}
 	// finally
+	psb_destroy(buf);
 	cleanupProm();
 	free(global.addr);
 	global.devs = cleanup(global.devs, &global.devList);

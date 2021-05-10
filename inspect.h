@@ -36,27 +36,29 @@ uint start(void);
  */
 uint stop(void);
 
+
+char *getVersions(psb_t *report, bool compact);
+
 /**
  * @brief List devices.
- * @param report	where to append the device information. Migh be \c NULL .
- * @return the number of devices found.
+ * @param report	Where to append prom formatted result. Migh be \c NULL .
+ * @param compact	If \c true omit any comments incl. metrics desvcription.
+ * @param devs	The lengt of the array passed as \c devList .
+ * @return a human readable report.
  */
-unsigned int listDevices(psb_t *report);
-
-unsigned int getVersions(psb_t *report);
-
-unsigned int getDevInfos(psb_t *report);
+char *getDevInfos(psb_t *report, bool compact, uint devs, gpu_t devList[]);
 
 /**
  * Get a list of all accessible devices. If a device is not accessible, the
  * corresponding entry in the list is \c NULL. Entries in the list have the
  * same index as the NVML device index (and usually ordered by pci address).
  *
- * @param report	where to append the device information. Migh be \c NULL .
- * @param devList	wehre to store the pointer to the generated device list.
+ * @param devList	where to store the pointer to the generated device list.
  * @return the number of available device, the size of \c devList .
  */
-unsigned int getDevices(psb_t *sb, gpu_t *devList[]);
+uint getDevices(gpu_t *devList[]);
+
+uint getUnitInfos(psb_t *sb);
 
 /**
  * Cleanup the list of gpu devices obtained via \c getDevices() to avoid

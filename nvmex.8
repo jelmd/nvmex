@@ -52,11 +52,28 @@ emitted by the daemon get dropped.
 Use option \fB-d\fR to request this mode.
 .RE
 
-For now \fBnvmex\fR answers one HTTP request after another to have a
+\fBnvmex\fR answers one HTTP request after another to have a
 very small footprint wrt. the system and queried devices. So it is
 recommended to adjust your firewalls and/or HTTP proxies accordingly.
 If you need SSL or authentication, use a HTTP proxy like nginx - for now
 \fBnvmex\fR should be kept small and simple.
+
+When \fBnvmex\fR runs in \fBforeground\fR or \fBdaemon\fR mode, it also
+returns by default the duration it took to collect and format:
+.RS 2
+.TP 2
+.B default
+HTTP related statistics
+.TP
+.B process
+\fBnvmex\fR process related data
+.TP
+.B nvidia
+data provided by NVML/nvidia driver
+.TP
+.B libprom
+everything (i.e. overall incl. default, process and nvidia).
+.RE
 
 .SH "OPTIONS"
 .TP 4
@@ -131,54 +148,59 @@ Currently supported are:
 .RS 4
 
 .TP 4
-.B clocks
+.B version
+All \fBnvmex_version\fR metrics (nvidia collector).
+.TP 4
+.B gpuinfo
+All \fBnvmex_gpu_info\fR metrics (nvidia collector).
+.TP 4
+.B clock
 All \fBnvmex_clock_*\fR metrics (nvidia collector).
-.TP
-.B process
-All \fBnvmex_process_*\fR metrics (process collector).
 .TP 4
 .B bar1mem
 All \fBnvmex_bar1mem_bytes\fR metrics (nvidia collector).
 .TP 4
-.B temperatures
+.B temperature
 All \fBnvmex_temperature_celsius\fR metrics (nvidia collector).
 .TP 4
 .B power
 All \fBnvmex_power_*\fR and \fBnvmex_perf\fR metrics (nvidia collector).
 .TP 4
-.B fan
+.B fan\ 
 All \fBnvmex_fan_speed_pct\fR metrics (nvidia collector).
 .TP 4
 .B utilization
 All \fBnvmex_util_pct\fR metrics (nvidia collector).
 .TP 4
 .B pcie
-All \fBnvmex_pcie_*\fR metrics (nvidia collector).
+All \fBnvmex_pcie_*\fR metrics (nvidia collector). Usually slow.
 .TP 4
-.B violations
+.B violation
 All \fBnvmex_violation_penalty_ms\fR metrics (nvidia collector).
 .TP 4
 .B memory
 All \fBnvmex_memory_bytes\fR metrics (nvidia collector).
 .TP 4
-.B ecc
+.B ecc\ 
 All \fBnvmex_ecc_*\fR metrics (nvidia collector).
 .TP 4
-.B nvlinks
+.B nvlink
 All \fBnvmex_nvlink_*\fR metrics (nvidia collector).
 .TP 4
-.B encstats
+.B encstat
 All \fBnvmex_enc_stat_*\fR metrics (nvidia collector).
 .TP 4
-.B encsessions
+.B encsession
 All \fBnvmex_enc_sessions_*\fR metrics (nvidia collector).
 .TP 4
-.B fbcstats
+.B fbcstat
 All \fBnvmex_fbc_stat_*\fR metrics (nvidia collector).
 .TP 4
-.B fbcsessions
+.B fbcsession
 All \fBnvmex_fbc_sessions_*\fR metrics (nvidia collector).
-
+.TP 4
+.B process
+All \fBnvmex_process_*\fR metrics (process collector).
 .RE
 
 .BI \-p " num"

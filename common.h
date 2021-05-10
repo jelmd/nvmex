@@ -37,6 +37,7 @@ typedef struct gpu_st {
 	nvmlDevice_t	dev;	//!< device handle for the GPU
 	char	*uuid;			//!< UUID of the GPU - survives reboot.
 	char	*pciId;	//!< PCI BUS ID - survives reboot if slot does not change.
+	char	*info;
 	char	**minMaxClock;	//<! PROM metrics for minMax Clocks 
 	char	**defaultClock;	//<! PROM metrics for default Clock
 	char	*temperatures;	//<! static temperature values
@@ -87,6 +88,14 @@ typedef struct gpu_st {
 
 #define NOT_AVAIL(x) \
 	((x) == NVML_ERROR_NOT_SUPPORTED || (x) == NVML_ERROR_GPU_IS_LOST)
+
+#define NVMEXM_VERS_D "Software version information."
+#define NVMEXM_VERS_T "gauge"
+#define NVMEXM_VERS_N "nvmex_version"
+
+#define NVMEXM_GPU_D "Misc. GPU information."
+#define NVMEXM_GPU_T "gauge"
+#define NVMEXM_GPU_N "nvmex_gpu_info"
 
 #define NVMEXM_CLOCK_D "GPU clock speeds in MHz."
 #define NVMEXM_CLOCK_T "gauge"
