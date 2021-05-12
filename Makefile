@@ -10,7 +10,7 @@
 VERSION = "0.0.1"
 PREFIX ?= /usr
 BINDIR ?= sbin
-MANDIR ?= share/man/man1
+MANDIR ?= share/man/man8
 # you probably want to append something like '/64', '/x86_64', '/amd64'
 LIBDIR ?= lib
 
@@ -45,7 +45,7 @@ CFLAGS_gcc += -Wno-unused-function -Wno-multistatement-macros
 # For Ubuntu Linux the package "cuda-nvml-dev-N-M" with N >= 10 and M >= 0
 # and "libnvidia-compute-X" must be installed. Otherwise adjust as needed:
 # nvml.h and libnvidia-ml.so.1 are required.
-CFLAGS_Linux = -I/usr/local/cuda-$(CUDA_VERS)/targets/x86_64-linux/include
+CFLAGS_Linux = -I$(CUDA_DIR)/targets/x86_64-linux/include
 CFLAGS_SunOS = -I/usr/include/microhttpd -D_MHD_DEPR_MACRO
 CFLAGS_libprom ?= $(shell [ -d /usr/include/libprom ] && printf -- '-I/usr/include/libprom' )
 #CFLAGS_libprom += $(shell [ -d ../libprom/prom/include ] && printf -- '-I../libprom/prom/include' )
@@ -90,11 +90,11 @@ SONAME= $(SOBN).$(DYNLIB_MAJOR)
 # uncomment to get a lib
 #DYNLIB= $(SONAME).$(DYNLIB_MINOR)
 
-LIBSRCS= inspect.c
+LIBSRCS= inspect.c clocks.c bar1memory.c temperature.c power.c fan.c \
+	util.c pcie.c violations.c memory.c ecc.c nvlink.c enc.c fbc.c
 LIBOBJS= $(LIBSRCS:%.c=%.o)
 
-PROGSRCS = main.c inspect.c clocks.c bar1memory.c temperature.c power.c fan.c \
-	util.c pcie.c violations.c memory.c ecc.c nvlink.c enc.c fbc.c
+PROGSRCS = main.c $(LIBSRCS)
 PROGOBJS = $(PROGSRCS:%.c=%.o) 
 
 all:	$(PROGS)
@@ -109,17 +109,11 @@ $(DYNLIB): Makefile $(LIBOBJS)
 	$(CC) -o $@ $(SHARED) $(SONAME_OPT)$(SONAME) $(LIBOBJS) $(LIBCFLAGS)
 	ln -sf $(DYNLIB) $(SONAME)
 
-$(PROGS):	Makefile $(PROGOBJS) $(DYNLIB)
-	$(CC) -o $@ $(PROGOBJS) $(DYNLIB) $(LDFLAGS)
+$(PROGS):	Makefile $(DYNLIB) $(PROGOBJS)
+	[ -z $(DYNLIB) ] && $(CC) -o $@ $(PROGOBJS) $(LDFLAGS) || \
+	$(CC) -o $@ main.o $(DYNLIB) $(LDFLAGS)
 
-man.1: $(PROTOS:%.so=%.1) nvmex.1
-	sed -e '/@MODULES@/,$$ d' nvmex.1 >man.1
-	cat $(PROTOS:%.so=%.1) >>man.1
-	sed -e '1,/@MODULES@/ d' nvmex.1 >>man.1
-
-man: man.1
-
-.PHONY:	clean distclean install depend man
+.PHONY:	clean distclean install depend
 
 # for maintainers to get _all_ deps wrt. source headers properly honored
 DEPENDFILE := makefile.dep
@@ -138,13 +132,16 @@ clean:
 distclean: clean
 	rm -f $(DEPENDFILE) *.rej *.orig
 
-install:	$(SUBDIRS) all
-	$(INSTALL) -d $(DESTDIR)$(PREFIX)/$(LIBDIR)
+install:	all
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/$(BINDIR)
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/$(MANDIR)
 	$(INSTALL) -m 755 $(PROGS) $(DESTDIR)$(PREFIX)/$(BINDIR)
+	$(INSTALL) -m 644 nvmex.8 $(DESTDIR)$(PREFIX)/$(MANDIR)/nvmex.8
+	[ -z $(DYNLIB) ] || $(MAKE) install-lib
+
+install-lib: $(DYNLIB)
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/$(LIBDIR)
 	$(INSTALL) -m 755 $(DYNLIB) $(DESTDIR)$(PREFIX)/$(LIBDIR)
-	$(INSTALL) -m 644 man.1 $(DESTDIR)$(PREFIX)/$(MANDIR)/nvmex.1
 	ln -sf $(DYNLIB) $(DESTDIR)$(PREFIX)/$(LIBDIR)/$(SONAME)
 	ln -sf $(DYNLIB) $(DESTDIR)$(PREFIX)/$(LIBDIR)/$(SOBN)
 
