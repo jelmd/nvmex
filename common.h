@@ -68,8 +68,8 @@ typedef struct gpu_st {
 	char	hasRemappedRows;
 	char	hasNvLinks;
 	char	nvLinkFieldError;
-#ifndef NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
 	char	nvLinks;		// sum up this number of nvLinks wrt. tx & rx
+#ifndef NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX
 	char	nvLinkSkipTxRx[NVML_NVLINK_MAX_LINKS + 1];
 	char	nvLinkTxRxError;
 #endif
