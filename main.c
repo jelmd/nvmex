@@ -274,38 +274,46 @@ http_handler(void *cls, struct MHD_Connection *connection, const char *url,
 	size_t *upload_data_size, void **con_cls)
 {
 #pragma GCC diagnostic pop
-	char *body;
+	char *body, *s;
+	size_t len;
 	struct MHD_Response *response;
 	enum MHD_ResponseMemoryMode mode = MHD_RESPMEM_PERSISTENT;
 	unsigned int status = MHD_HTTP_BAD_REQUEST;
 	static const char *labels[] = { "" };
 	static char *RESP[] = { NULL, NULL, NULL };
+	static int rlen[] = { 0, 0, 0 };
 
 	int ret;
 
 	if (RESP[0] == NULL) {
 		RESP[0]= strdup("Invalid HTTP Method\n");
+		rlen[0] = strlen(RESP[0]);
 		RESP[1]= strdup("<html><body>See <a href='/metrics'>/metrics</a>.\r\n");
+		rlen[1] = strlen(RESP[1]);
 		RESP[2]= strdup("Bad Request\n");
+		rlen[2] = strlen(RESP[2]);
 	}
 
 	if (strcmp(method, "GET") != 0) {
 		body = RESP[0];
+		len = rlen[0];
 		labels[0] = "other";
 	} else if (strcmp(url, "/") == 0) {
 		body = RESP[1];
+		len = rlen[1];
 		status = MHD_HTTP_OK;
 		labels[0] = "/";
 	} else if (strcmp(url, "/metrics") == 0) {
-		if (sb != NULL) {
+		// trick 17: collect() adds stuff to sb directly, when it gets invoked
+		// indirectly by pcr_bridge(). Therefore: thread local
+		if (sb != NULL)
 			PROM_WARN("stringBuilder %p is already there =8-(", sb);
-		} else {
-			//pthread_t tid = pthread_self();
-			//PROM_WARN("stringBuilder tid=%ld\n", tid);
-		}
-		sb = psb_new();			// thread local
-		psb_add_str(sb, pcr_bridge(PROM_COLLECTOR_REGISTRY));
+		sb = psb_new();
+		s = pcr_bridge(PROM_COLLECTOR_REGISTRY);
+		psb_add_str(sb, s);		// add libprom metrics
+		free(s);				// avoid mem leaks
 		body = psb_dump(sb);
+		len = psb_len(sb);
 		psb_destroy(sb);		// avoid mem leaks on thread exit
 		sb = NULL;
 		labels[0] = "/metrics";
@@ -313,11 +321,12 @@ http_handler(void *cls, struct MHD_Connection *connection, const char *url,
 		status = MHD_HTTP_OK;
 	} else {
 		body = RESP[2];
+		len = rlen[2];
 		labels[0] = "other";
 	}
 	prom_counter_inc(global.req_counter, labels);
 
-	response = MHD_create_response_from_buffer(strlen(body), body, mode);
+	response = MHD_create_response_from_buffer(len, body, mode);
 	if (response == NULL) {
 		if (mode == MHD_RESPMEM_MUST_FREE)
 			free(body);
@@ -326,7 +335,7 @@ http_handler(void *cls, struct MHD_Connection *connection, const char *url,
 		labels[0] = "count";
 		prom_counter_inc(global.res_counter, labels);
 		labels[0] = "bytes";
-		prom_counter_add(global.res_counter, strlen(body), labels);
+		prom_counter_add(global.res_counter, len, labels);
 		ret = MHD_queue_response(connection, status, response);
 		MHD_destroy_response(response);
 	}
@@ -535,14 +544,14 @@ main(int argc, char **argv) {
 	struct in6_addr in6addr;
 	struct in6_addr *addr = malloc(sizeof(struct in6_addr));
 	psb_t *buf;
-	char *str;
+	char *str = getShortOpts(options);
 
 	while (1) {
 		int c, optidx = 0;
-		char *optstr = getShortOpts(options);
-		if (optstr == NULL)
+
+		if (str == NULL)
 			break;
-		c = getopt_long (argc, argv, optstr, options, &optidx);
+		c = getopt_long (argc, argv, str, options, &optidx);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -619,6 +628,7 @@ main(int argc, char **argv) {
 				return(1);
 		}
 	}
+	free(str);
 	free(addr);
 	if (err)
 		return SMF_EXIT_ERR_CONFIG;
