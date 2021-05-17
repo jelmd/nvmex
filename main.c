@@ -133,17 +133,22 @@ static struct {
 };
 
 static int
-disableMetrics(char *clist) {
+disableMetrics(char *skipList) {
+	char *clist;
 	char *s, *e;
 	size_t len;
 	int res = 0;
 
-	if (clist == NULL)
+	if (skipList == NULL)
 		return 0;
 
-	len = strlen(clist);
+	len = strlen(skipList);
 	if (len == 0)
 		return 0;
+	// Linux passes the pointer to the original arg list and thus the modified
+	// skipList would show up in process list. So make a copy and leave the
+	// original as is.
+	clist = strdup(skipList);
 	e = clist + len;
 	s = e;
 	while (s > clist) {
@@ -199,6 +204,7 @@ disableMetrics(char *clist) {
 		*s = '\0';
 		e = s;
 	}
+	free(clist);
 	return res;
 }
 
