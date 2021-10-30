@@ -22,23 +22,32 @@ setStaticValues(gpu_t *gpu) {
 	int i;
 	size_t len;
 
-	assert(NVML_TEMPERATURE_THRESHOLD_COUNT == 4);
+	assert(NVML_TEMPERATURE_THRESHOLD_COUNT == 4
+		|| NVML_TEMPERATURE_THRESHOLD_COUNT == 7);
 	int order[] = {
 		NVML_TEMPERATURE_THRESHOLD_GPU_MAX,
 		NVML_TEMPERATURE_THRESHOLD_SLOWDOWN,
 		NVML_TEMPERATURE_THRESHOLD_SHUTDOWN,
-		NVML_TEMPERATURE_THRESHOLD_MEM_MAX
+		NVML_TEMPERATURE_THRESHOLD_MEM_MAX,
+		// since 11.2
+		NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_MIN,
+		NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_CURR,
+		NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_MAX
 	};
 
 	const char *name[] = {
+		// should device be renamed to target or item?
 		"device=\"gpu\",value=\"max\"",
 		"device=\"gpu\",value=\"slowdown\"",
 		"device=\"gpu\",value=\"shutdown\"",
-		"device=\"mem\",value=\"max\""
+		"device=\"mem\",value=\"max\"",
+		"device=\"acoustic_threshold\",value=\"min\"",
+		"device=\"acoustic_threshold\",value=\"set\"",
+		"device=\"acoustic_threshold\",value=\"max\"",
 	};
 	buf[0] = '\0';
 	len = 0;
-	for (i = 0; i < 4 && len < sizeof(buf); i++) {
+	for (i = 0; i < NVML_TEMPERATURE_THRESHOLD_COUNT && len < sizeof(buf); i++){
 		res = nvmlDeviceGetTemperatureThreshold(gpu->dev, order[i], &temp);
 		if (NVML_SUCCESS == res) {
 			len += snprintf(buf + len, sizeof(buf) - len,
