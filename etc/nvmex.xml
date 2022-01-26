@@ -44,7 +44,7 @@
 					However, file_dac_{read|write} are not sufficient, so
 					we need to run as root instead of webservd for now. -->
 				<method_credential user='root' group='webservd'
-					privileges='basic,net_privaddr,file_dac_read,file_dac_write'/>
+					privileges='basic,net_privaddr,file_dac_read,file_dac_write,{zone}:/var/log/nvmex.log'/>
 			</method_context>
 		</exec_method>
 

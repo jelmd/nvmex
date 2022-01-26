@@ -3,12 +3,13 @@
 [Unit]
 Description=Metrics exporter for Nvidia GPUs
 Documentation=man:nvmex(8)
-After=network.target auditd.service
+After=network.target auditd.service nvidia-persistenced.service
 Before=vmagent.service
 
 [Service]
 Type=forking
-# no special privileges are required
+# Except for nvmex_nvlink_traffic_bytes no special privileges are required.
+# So use an unprivileged user:
 User=daemon
 Group=daemon
 
@@ -21,6 +22,9 @@ RestartPreventExitStatus=1 95 96 97 98 99 100 101 102
 ExecStart=/usr/sbin/nvmex -l %L/nvmex/nvmex.log -d $ARGS
 ExecStop=/bin/kill -s SIGTERM $MAINPID
 TimeoutSec=3
+
+MemoryLow=4M
+MemoryMin=2M
 
 [Install]
 WantedBy=multi-user.target
