@@ -37,7 +37,9 @@
 #include "ecc.h"
 #include "nvlink.h"
 #include "enc.h"
+#ifndef LEGACY
 #include "fbc.h"
+#endif
 
 typedef enum {
 	SMF_EXIT_OK	= 0,
@@ -89,8 +91,10 @@ static struct {
 	bool nvlink;
 	bool encStats;
 	bool encSessions;
+#ifndef LEGACY
 	bool fbcStats;
 	bool fbcSessions;
+#endif
 	gpu_t *devList;
 	unsigned int devs;
 	prom_counter_t *req_counter;
@@ -118,8 +122,10 @@ static struct {
 	.nvlink = true,
 	.encStats = true,
 	.encSessions = true,
+#ifndef LEGACY
 	.fbcStats = true,
 	.fbcSessions = true,
+#endif
 	.devList = NULL,
 	.devs = 0,
 	.req_counter = NULL,
@@ -190,10 +196,12 @@ disableMetrics(char *skipList) {
 				global.encStats = false;
 			else if (strcmp(s, "encsession") == 0)
 				global.encSessions = false;
+#ifndef LEGACY
 			else if (strcmp(s, "fbcstat") == 0)
 				global.fbcStats = false;
 			else if (strcmp(s, "fbcsession") == 0)
 				global.fbcSessions = false;
+#endif
 			else {
 				PROM_WARN("Unknown metrics '%s'", s);
 				res++;
@@ -243,8 +251,10 @@ collect(prom_collector_t *self) {
 		getNvLink(sb, compact, global.devs, global.devList);
 	if (global.encStats || global.encSessions)
 		getEnc(sb, compact, global.devs, global.devList, global.encSessions);
+#ifndef LEGACY
 	if (global.fbcStats || global.fbcSessions)
 		getFBC(sb, compact, global.devs, global.devList, global.fbcSessions);
+#endif
 	if (sb != NULL && !compact)
 		psb_add_char(sb, '\n');
 	return NULL;

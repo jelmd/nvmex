@@ -7,7 +7,7 @@
 #
 # Copyright 2021 Jens Elkner (jel+nvmex-src@cs.ovgu.de)
 
-VERSION = "0.0.1"
+VERSION = "1.1.1"
 PREFIX ?= /usr
 BINDIR ?= sbin
 MANDIR ?= share/man/man8
@@ -15,8 +15,10 @@ MANDIR ?= share/man/man8
 LIBDIR ?= lib
 
 # via package cuda-nvml-dev-10-1
-CUDA_VERS ?= 11.1
+CUDA_VERS ?= 11.2
 CUDA_DIR ?= /usr/local/cuda-$(CUDA_VERS)
+# set to 1 if you wanna run it with legacy drivers, e.g. <= version 390 etc.
+LEGACY = 0
 
 OS := $(shell uname -s)
 MACH ?= 64
@@ -51,7 +53,7 @@ CFLAGS_libprom ?= $(shell [ -d /usr/include/libprom ] && printf -- '-I/usr/inclu
 #CFLAGS_libprom += $(shell [ -d ../libprom/prom/include ] && printf -- '-I../libprom/prom/include' )
 CFLAGS ?= -m$(MACH) $(CFLAGS_$(CC)) $(CFLAGS_libprom) $(OPTIMZE) -g
 CFLAGS += -std=c11 -DVERSION=\"$(VERSION)\"
-CFLAGS += -DPROM_LOG_ENABLE -D_XOPEN_SOURCE=600
+CFLAGS += -DPROM_LOG_ENABLE -D_XOPEN_SOURCE=600 -DLEGACY=$(LEGACY)
 CFLAGS += $(CFLAGS_$(OS))
 # For Solaris the package 'driver/graphics/nvidia' must be installed. Also copy
 # the nvml.h from Ubuntu to .
@@ -90,8 +92,10 @@ SONAME= $(SOBN).$(DYNLIB_MAJOR)
 # uncomment to get a lib
 #DYNLIB= $(SONAME).$(DYNLIB_MINOR)
 
+FBC_0 = fbc.c
+FBC_1 =
 LIBSRCS= inspect.c clocks.c bar1memory.c temperature.c power.c fan.c \
-	util.c pcie.c violations.c memory.c ecc.c nvlink.c enc.c fbc.c
+	util.c pcie.c violations.c memory.c ecc.c nvlink.c enc.c $(FBC_$(LEGACY))
 LIBOBJS= $(LIBSRCS:%.c=%.o)
 
 PROGSRCS = main.c $(LIBSRCS)

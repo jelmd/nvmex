@@ -178,7 +178,9 @@ getECC(psb_t *sb, bool compact, uint devs, gpu_t devList[]) {
 			psb_add_str(sb, buf);
 		}
 	}
-
+#ifdef LEGACY
+#undef NVML_FI_DEV_REMAPPED_COR
+#endif
 #ifdef NVML_FI_DEV_REMAPPED_COR
 	if (!compact)
 		addPromInfo(NVMEXM_ECC_ROW);
