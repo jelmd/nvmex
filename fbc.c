@@ -16,6 +16,8 @@
 static const char *stype[] =
 	{ "unknown", "tosys", "cuda", "vid", "hwenc", "???" };
 
+// since 10.0
+#ifdef NVML_NVFBC_SESSION_FLAG_DIFFMAP_ENABLED
 static void
 addFbcSessionInfo(gpu_t *gpu, uint sessions, psb_t *sb_fps, psb_t *sb_lat) {
 	nvmlReturn_t res;
@@ -150,3 +152,11 @@ end:
 
 	return sz != 0;
 }
+#else
+#pragma message "Skipping 'nvmlDeviceGetFBCStats()' support."
+#pragma message "Skipping 'nvmlDeviceGetFBCSessions()' support."
+bool
+getFBC(psb_t *sb, bool compact, uint devs, gpu_t devList[], bool full) {
+	return false;
+}
+#endif /* NVML_NVFBC_SESSION_FLAG_DIFFMAP_ENABLED */
