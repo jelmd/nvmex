@@ -11,6 +11,8 @@
 		cp etc/nvmex.xml /lib/svc/manifest/application/management/nvmex.xml
 		svcadm restart manifest-import
 		svcadm enable nvmex
+
+	The nvmex package does this on install/uninstall automatically.
 -->
 <service_bundle type='manifest' name='LNFnvmex:nvmex'>
 
@@ -32,7 +34,7 @@
 		</dependency>
 		<!-- Start nvmex before vmagent -->
 		<dependent name='vmagent' grouping='optional_all' restart_on='none'>
-			<service_fmri value='svc:/application/vmagent'/>
+			<service_fmri value='svc:/application/database/vmagent'/>
 		</dependent>
 
 		<!-- Service start/stop methods -->
@@ -56,6 +58,11 @@
 			<propval name='port' type='integer' value='9400' />
 			<propval name='logfile' type='astring' value='/var/log/nvmex.log'/>
 			<propval name='args' type='astring' value=''/>
+			<!-- You may change it using the something like this:
+				svccfg -s nvmex:default setprop 'config/args = ( "-n" "violation,bar1mem,pcie,nvlink,encstat,encsession,fbcstat,fbcsession" "-c" )'
+				svccfg -s nvmex:default refresh
+				svcadm disable -st nvmex ; svcadm enable -s nvmex
+			-->
 		</property_group>
 
 		<property_group name='startd' type='framework'>
