@@ -23,7 +23,8 @@ setStaticValues(gpu_t *gpu) {
 	size_t len;
 
 	assert(NVML_TEMPERATURE_THRESHOLD_COUNT == 4
-		|| NVML_TEMPERATURE_THRESHOLD_COUNT == 7);
+		|| NVML_TEMPERATURE_THRESHOLD_COUNT == 7
+		|| NVML_TEMPERATURE_THRESHOLD_COUNT == 8);
 	int order[] = {
 		NVML_TEMPERATURE_THRESHOLD_GPU_MAX,
 		NVML_TEMPERATURE_THRESHOLD_SLOWDOWN,
@@ -33,7 +34,11 @@ setStaticValues(gpu_t *gpu) {
 #ifdef NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_MIN
 		NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_MIN,
 		NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_CURR,
-		NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_MAX
+		NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_MAX,
+#endif
+		// since 12.5
+#ifdef NVML_TEMPERATURE_THRESHOLD_GPS_CURR
+		NVML_TEMPERATURE_THRESHOLD_GPS_CURR
 #endif
 	};
 
@@ -46,6 +51,7 @@ setStaticValues(gpu_t *gpu) {
 		"device=\"acoustic_threshold\",value=\"min\"",
 		"device=\"acoustic_threshold\",value=\"set\"",
 		"device=\"acoustic_threshold\",value=\"max\"",
+		"device=\"gps_threshold\",value=\"max\"",
 	};
 	buf[0] = '\0';
 	len = 0;
