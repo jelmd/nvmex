@@ -201,6 +201,9 @@ disableMetrics(char *skipList) {
 				global.fbcStats = false;
 			else if (strcmp(s, "fbcsession") == 0)
 				global.fbcSessions = false;
+#else
+			else if (strcmp(s, "fbcstat") == 0 || strcmp(s, "fbcsession") == 0)
+				PROM_WARN("Legacy metrics '%s' ignored", s);
 #endif
 			else {
 				PROM_WARN("Unknown metrics '%s'", s);
@@ -284,7 +287,11 @@ getShortOpts(const struct option *opts) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#if MHD_VERSION >= 0x00097002
+static enum MHD_Result
+#else
 static int
+#endif
 http_handler(void *cls, struct MHD_Connection *connection, const char *url,
 	const char *method, const char *version, const char *upload_data,
 	size_t *upload_data_size, void **con_cls)
